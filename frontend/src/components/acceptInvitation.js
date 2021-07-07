@@ -11,15 +11,17 @@ export default function AcceptInvitation({ user, setUser }) {
         if (response.status === 200) {
           console.log(response.data)
           const d = response.data
-          const newUser = { ...user, invitations: d.invitations, gameGroups: d.gameGroups }
+          const newUser = { ...user, invitations: d.savedUser.invitations, gameGroups: d.savedUser.gameGroups }
+          console.log(newUser)
           setUser(newUser)
           localStorage.setItem('kiakkoTeroUser', JSON.stringify(newUser))
         }
       })
       .catch(e => console.log(e))
   }
- 
+
   if (user.invitations) {
+    console.log('invitations', user.invitations)
     invitations = user.invitations.map(i => (
       <li key={i}>
         {i.name} - {i.admin.name}

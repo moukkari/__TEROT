@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import InviteUser from './inviteUser'
 import CreateGameGroup from './createGameGroup'
+import DraftSettings from './draftSettings'
 
 
 export default function GameGroupConfig({ user, setUser, createMessage }) {
@@ -34,7 +35,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
       {gameGroupData ?
         <div>
           <button onClick={() => removeGameGroup()}>Poista kimppa</button>
-          
+          <DraftSettings data={gameGroupData.draft} />
           <InviteUser user={user} gameGroupData={gameGroupData} />
           {
             JSON.stringify(gameGroupData, null, 2)

@@ -4,11 +4,13 @@ export default function GameGroupStatus({ user }) {
   const [gameGroups, setGameGroups] = useState([])
   const [selectedGroup, setSelectedGroup] = useState({})
   const [selectedOption, setSelectedOption] = useState('testi')
+  const [toggle, setToggle] = useState(false)
 
   useEffect(() => {
+    console.log('called')
     if (user && user.gameGroups) {
       setSelectedGroup(user.gameGroups[0])
-      setGameGroups(user.gameGroups.map(g => <option key={g._id} value={g._id}>{g.name}</option>))
+      setGameGroups(user.gameGroups.map(g => <option key={`g${g._id}`} value={g._id}>{g.name}</option>))
     }
   }, [user])
 
@@ -28,8 +30,9 @@ export default function GameGroupStatus({ user }) {
   return (
     <div>
       <h1>Kimppa</h1>
-      {user && user.gameGroups ?
+      {toggle && user && user.gameGroups ?
       <div>
+        <button onClick={() => setToggle(false)}>Piilota kimppa</button>
         <select value={selectedOption} onChange={({ target }) => changeGameGroup(target.value)}>
           {gameGroups}
         </select>
@@ -40,12 +43,12 @@ export default function GameGroupStatus({ user }) {
               return <li key={i}>{key}: {value.toString()}</li>
             } else {
               return (
-                <>
+                <div key={i}>
                 <li>{key}</li>
                 <ul>
                   {Object.entries(value).map(([k, v]) => <li key={k}>{k}: {v}</li>)}
                 </ul>
-                </>
+                </div>
               )
             }
             
@@ -55,7 +58,7 @@ export default function GameGroupStatus({ user }) {
         
       </div>
       :
-      'Et ole kimpan jäsen'
+      <button onClick={() => setToggle(true)}>Näytä kimppa</button> 
       }
     </div>
   )

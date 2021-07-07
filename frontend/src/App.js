@@ -16,7 +16,9 @@ const App = () => {
   useEffect(() => {
     axios.get('http://localhost:3001/api/nhl')
       .then(res => {
-        setStandings(res.data)
+        const sortedStandings = res.data.sort((a, b) => ((a.Wins * 2) + a.OvertimeLosses) < ((b.Wins * 2) + b.OvertimeLosses) ? 1 : ((b.Wins * 2) + b.OvertimeLosses) < ((a.Wins * 2) + a.OvertimeLosses) ? -1 : 0)
+        console.log(sortedStandings[0])
+        setStandings(sortedStandings)
       })
   }, [])
   

@@ -12,7 +12,8 @@ const userSchema = mongoose.Schema({
   gameGroups: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'GameGroup'
+      ref: 'GameGroup',
+      autoPopulate: true
     }
   ],
   adminOf: {
@@ -27,6 +28,7 @@ const userSchema = mongoose.Schema({
   ]
 })
 
+userSchema.plugin(require('mongoose-autopopulate'))
 userSchema.plugin(uniqueValidator)
 
 userSchema.set('toJSON', {

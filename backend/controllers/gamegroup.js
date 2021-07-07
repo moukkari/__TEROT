@@ -37,13 +37,10 @@ gameGroupRouter.post('/create', async (request, response) => {
     const savedGameGroup = await gameGroup.save()
     console.log('group created')
     user.adminOf = savedGameGroup._id
-    user.gameGroups.push(savedGameGroup._id)
+    user.gameGroups.push(savedGameGroup)
 
     const savedUser = await user.save()
     console.log('user saved')
-
-    const groups = await GameGroup.find().where('_id').in(savedUser.gameGroups).populate().exec()
-    savedUser.gameGroups = groups
 
     response.json(savedUser)
     console.log('ok')
@@ -74,8 +71,6 @@ gameGroupRouter.delete('/:id', async (request, response) => {
       await player.save()
       console.log('removed', player)
     })
-
-    await players.save()
 
     const draft = await Draft.findOne({ gameGroup: gameGroup._id })
     draft.remove()
@@ -110,22 +105,40 @@ gameGroupRouter.put('/accept/:id', async (request, response) => {
     } else {
       gameGroup.players.push(user)
       await gameGroup.save()
-      console.log(user.invitations, gameGroup._id)
 
       user.gameGroups.push(gameGroup._id)
       user.invitations.pull(gameGroup._id)
-      await user.save()
-      const groups = await GameGroup.find().where('_id').in(user.gameGroups).populate().exec()
-      response.status(200).json( { msg: 'invitation accepted succesfully', data: { ...user, gameGroups: groups } } )
+      const savedUser = await user.save()
+      console.log(savedUser)
+      response.status(200).json( { msg: 'invitation accepted succesfully', data: { savedUser } } )
     }
   } catch(e) {
     response.status(400).json('error accepting')
   }
+})
+
+
+gameGroupRouter.put('/draft/:id', async (request, response) => {
+  try {
+    const id = request.params.id
+    const body = request.body
+    console.log(id, body)
+
+    const draft = await Draft.findOne({ _id: id })
+
+    if (draft && body.date) {
+      draft.startingTime = body.date
+
+      const savedDraft = await draft.save()
+
+      response.json(savedDraft)
+    } else {
+      response.json('draft not found')
+    }
+  } catch {
+    response.json('erroria pirusti')
+  }
   
-
-  
-
-
 })
 
 module.exports = gameGroupRouter

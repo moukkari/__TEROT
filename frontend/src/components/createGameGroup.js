@@ -23,6 +23,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
           createMessage(res.data.error, true)
         } else {
           createMessage('Kimppa luotu onnistuneesti')
+          console.log(res.data)
           setUser(res.data)
           localStorage.setItem('kiakkoTeroUser', JSON.stringify(res.data))
         }
