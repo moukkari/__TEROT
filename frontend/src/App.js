@@ -45,6 +45,7 @@ const App = () => {
         <Col>
           <h1>Terot</h1>
           {message}
+          
         </Col>
         <Col>
           <CreateUser createMessage={createMessage} />
@@ -56,8 +57,9 @@ const App = () => {
       </Row>
       <Row>
         <Col>
+          {user ?
           <GameGroupStatus user={user} />
-          
+          :''}
         </Col> 
         <Col>
           {user ?

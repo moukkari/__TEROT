@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import LiveDraft from './liveDraft'
+
 
 export default function GameGroupStatus({ user }) {
   const [gameGroups, setGameGroups] = useState([])
@@ -30,6 +32,9 @@ export default function GameGroupStatus({ user }) {
   return (
     <div>
       <h1>Kimppa</h1>
+      {user && user.gameGroups.length > 0 && selectedGroup.draft ? 
+          <LiveDraft username={user.username} draft={selectedGroup.draft} />
+          : 'no drafts'}
       {toggle && user && user.gameGroups ?
       <div>
         <button onClick={() => setToggle(false)}>Piilota kimppa</button>

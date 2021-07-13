@@ -32,7 +32,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
 
   return (
     <div>
-      {gameGroupData ?
+      {gameGroupData && gameGroupData.draft ?
         <div>
           <button onClick={() => removeGameGroup()}>Poista kimppa</button>
           <DraftSettings data={gameGroupData.draft} />
