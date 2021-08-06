@@ -32,7 +32,7 @@ export default function GameGroupStatus({ user }) {
   return (
     <div>
       <h1>Kimppa</h1>
-      {user && user.gameGroups.length > 0 && selectedGroup.draft ? 
+      {user && user.gameGroups && user.gameGroups.length > 0 && selectedGroup && selectedGroup.draft ? 
           <LiveDraft username={user.username} draft={selectedGroup.draft} />
           : 'no drafts'}
       {toggle && user && user.gameGroups ?

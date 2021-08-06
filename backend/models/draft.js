@@ -8,7 +8,6 @@ const draftSchema = mongoose.Schema({
   },
   status: { type: String, default: 'scheduled', required: true },
   startingTime: { type: Date, default: new Date('October 5, 2021 17:00:00'), required: true },
-  totalPlayers: { type: Number, default: 1, required: true },
   teamsLeft: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,27 +17,14 @@ const draftSchema = mongoose.Schema({
   ],
   draftOrder: [
     {
-      turn: Number,
-      player: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-      },
-      status: String, // pending, used 
-      team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Team'
-      }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     }
-  ],
-  inTurn: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  nextInTurn: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
+  ]
 })
+
+draftSchema.plugin(require('mongoose-autopopulate'))
+
 
 const Draft = mongoose.model('Draft', draftSchema)
 

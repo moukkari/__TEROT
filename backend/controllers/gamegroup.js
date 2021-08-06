@@ -64,12 +64,20 @@ gameGroupRouter.delete('/:id', async (request, response) => {
     await admin.save()
     await gameGroup.remove()
 
-    const players = await User.find({ gameGroups: gameGroup._id })
+    let players = await User.find({ gameGroups: gameGroup._id })
 
     players.forEach(async player => {
       player.gameGroups.pull(gameGroup._id)
       await player.save()
-      console.log('removed', player)
+      console.log('removed gamegroup from', player)
+    })
+
+    players = await User.find({ invitations: gameGroup._id })
+
+    players.forEach(async player => {
+      player.invitations.pull(gameGroup._id)
+      await player.save()
+      console.log('removed invitation for', player)
     })
 
     const draft = await Draft.findOne({ gameGroup: gameGroup._id })
@@ -82,12 +90,24 @@ gameGroupRouter.delete('/:id', async (request, response) => {
 gameGroupRouter.get('/:id', async (request, response) => {
   const id = request.params.id
   const gameGroup = await GameGroup.findOne({ _id: id })
-    .populate('draft')
 
   if (!gameGroup) {
     response.json('eipä löytynyt: ' + id)
   } else {
     response.json(gameGroup)
+  }
+})
+
+gameGroupRouter.get('/draft/:id', async (request, response) => {
+  const id = request.params.id
+  const draft = await Draft.findOne({ _id: id })
+    .populate('draftOrder', { name: 1, username: 1 })
+    .populate('teamsLeft', { City: 1, Name: 1, Key: 1 })
+
+  if (!draft) {
+    response.json('eipä löytynyt: ' + id)
+  } else {
+    response.json(draft)
   }
 })
 

@@ -1,4 +1,5 @@
 let clients = []
+let streamsOn = false
 const Draft = require('../models/draft')
 const mongoose = require('mongoose')
 
@@ -75,7 +76,8 @@ const draftRouter = async (ws, req) => {
   ws.on('message', function(msg) {
     console.log(msg)
     
-    const broadcastRegex = /^broadcast\:/;
+    const broadcastRegex = /^broadcast\:/
+    const teamChosenRegex = /^teamChosen\:/
 
     if (broadcastRegex.test(msg)) {
       msg = msg.replace(broadcastRegex, '')
@@ -85,53 +87,88 @@ const draftRouter = async (ws, req) => {
         .forEach(client => {
           console.log(client.user, client.id)
           if (client.ws !== ws) {
-              client.ws.send(`Hello, broadcast message -> ${msg}`);
+              client.ws.send(`Hello, broadcast message -> ${msg}`)
           } else {
             console.log('not broadcasting to itself')
           }
         })
         
+    } else if (teamChosenRegex.test(msg)) {
+      clients[draftId]
+        .forEach(client => {
+          console.log(client.user, client.id)
+          if (client.ws !== ws) {
+              client.ws.send(`Team chosen -> ${msg}`)
+          } else {
+            console.log('not broadcasting to itself')
+          }
+        })
     } else {
       ws.send('you sent this: ' + msg)
     }
   })
 
   ws.on('close', () => {
+    if (clients[draftId]) {
+      let toFind = clients[draftId].find(client => client.ws === ws)
+      if (toFind) {
+        clients[draftId] = clients[draftId].filter(client => client !== toFind)
+      } else {
+        console.log('client not found')
+      }
+    }
+    
+    
     console.log('WebSocket was closed')
+    console.log(clients)
   })
 
   ws.on('request', (request) => {
-    console.log('new request', request)
+    console.log('new request!', request)
   })
 
-  
-  try {
-    const filter = {
-      $match: {
-          'documentKey._id': mongoose.Types.ObjectId(draftId)
-      }
-    }
+  if (!streamsOn) {
+    try {
+      streamsOn = true
+      console.log('starting watch')
+      
+      const changeStream = Draft.watch()
 
-    console.log('starting watch')
-    const options = { fullDocument: 'updateLookup' }
-    const changeStream = Draft.watch(filter, options)
+      changeStream.on('change', (change) => {
+          console.log('db changed', change.documentKey._id)
+          //console.log(clients)
 
-    changeStream.on('change', (change) => {
-        console.log('changed')
+          if (clients[change.documentKey._id]) {
+            clients[change.documentKey._id].forEach(client => {
 
-        ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
-        /*
-        clients
-            .forEach(client => {
-                if (client != ws) {
-                    client.client.send(`Hello, broadcast message -> ${JSON.stringify(change.updateDescription)}`);
-                }    
+              /**
+              if (client.ws !== ws) {
+                client.ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
+              } else {
+                console.log('not broadcasting to itself')
+              } 
+              */
+              // client.ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
+              client.ws.send('change:' + JSON.stringify(change))
             })
-        */    
-    })
-  } catch(e) {
-    console.log('fucked up', e)
+          } else {
+            ws.send(`Hello, some other db was changed`)
+          }
+          
+          /*
+          clients
+              .forEach(client => {
+                  if (client != ws) {
+                      client.client.send(`Hello, broadcast message -> ${JSON.stringify(change.updateDescription)}`);
+                  }    
+              })
+          */    
+      })
+    } catch(e) {
+      console.log('fucked up', e)
+    }
   }
+  
   
   
 }
