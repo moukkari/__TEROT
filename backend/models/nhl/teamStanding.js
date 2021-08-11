@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
 
 
-const teamSchema = mongoose.Schema({
+const teamStandingSchema = mongoose.Schema({
   Season: Number,
   SeasonType: Number,
   TeamID: Number,
@@ -25,9 +25,9 @@ const teamSchema = mongoose.Schema({
   GlobalTeamID: Number
 })
 
-teamSchema.plugin(uniqueValidator)
+teamStandingSchema.plugin(uniqueValidator)
 
-teamSchema.set('toJSON', {
+teamStandingSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
@@ -42,6 +42,6 @@ teamSchema.set('toJSON', {
   }
 })
 
-const Team = mongoose.model('Team', teamSchema)
+const TeamStanding = mongoose.model('TeamStanding', teamStandingSchema)
 
-module.exports = Team
+module.exports = TeamStanding

@@ -11,8 +11,21 @@ const draftSchema = mongoose.Schema({
   teamsLeft: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Team',
+      ref: 'TeamData',
       required: true
+    }
+  ],
+  teamsChosen: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TeamData',
+        required: true
+      }
     }
   ],
   draftOrder: [
@@ -20,7 +33,11 @@ const draftSchema = mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     }
-  ]
+  ],
+  round: { type: Number, default: 1 },
+  totalRounds: Number,
+  pick: { type: Number, default: 1 },
+  picksPerRound: Number
 })
 
 draftSchema.plugin(require('mongoose-autopopulate'))

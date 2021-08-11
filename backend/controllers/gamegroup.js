@@ -2,7 +2,7 @@ const gameGroupRouter = require('express').Router()
 const GameGroup = require('../models/gameGroup')
 const User = require('../models/user')
 const Draft = require('../models/draft')
-const Team = require('../models/nhl/team')
+const TeamData = require('../models/nhl/teamData')
 
 gameGroupRouter.post('/create', async (request, response) => {
   const body = request.body
@@ -16,7 +16,7 @@ gameGroupRouter.post('/create', async (request, response) => {
   }
   
   try {
-    const teams = await Team.find({})
+    const teams = await TeamData.find({})
 
     const gameGroup = new GameGroup({
       name: body.name,
@@ -103,6 +103,20 @@ gameGroupRouter.get('/draft/:id', async (request, response) => {
   const draft = await Draft.findOne({ _id: id })
     .populate('draftOrder', { name: 1, username: 1 })
     .populate('teamsLeft', { City: 1, Name: 1, Key: 1 })
+    .populate({
+      path: 'teamsChosen', 
+      populate: { 
+        path: 'team',
+        select: { City: 1, Name: 1, Key: 1 }
+      }
+    })
+    .populate({
+      path: 'teamsChosen', 
+      populate: { 
+        path: 'user',
+        select: { name: 1 }
+      }
+    })
 
   if (!draft) {
     response.json('eipä löytynyt: ' + id)

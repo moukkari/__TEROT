@@ -37,6 +37,9 @@ const scheduleDraft = async (draftId, startingTime) => {
       .populate('players', 'name')
     
     draft.draftOrder = await shuffle(gameGroup.players)
+    draft.totalRounds = Math.floor(draft.teamsLeft.length / gameGroup.players.length)
+
+    draft.picksPerRound = Math.floor(draft.teamsLeft.length / draft.totalRounds)
 
     await draft.save()
 

@@ -1,59 +1,71 @@
 const axios = require('axios')
-const Team = require('../models/nhl/team')
+const TeamData = require('../models/nhl/teamData')
+const TeamStanding = require('../models/nhl/teamStanding')
+let shouldUpdateTeamData = true
 
-let updateFlorida = {
-  Season: 2021,
-  SeasonType: 1,
-  TeamID: 8,
-  Key: 'FLA',
-  City: 'Florida',
-  Name: 'Panthers',
-  Conference: 'Eastern',
-  Division: 'Central',
-  Wins: 55,
-  Losses: 14,
-  OvertimeLosses: 5,
-  Percentage: 0.661,
-  ConferenceWins: 20,
-  ConferenceLosses: 12,
-  DivisionWins: 37,
-  DivisionLosses: 19,
-  ShutoutWins: 3,
-  ConferenceRank: null,
-  DivisionRank: 3,
-  GlobalTeamID: 30000008
-}
 
 const updateData = async () => {
-  console.log('updating standings')
+  if (shouldUpdateTeamData) {
+    shouldUpdateTeamData = false
+
+    setTimeout(() => {
+      shouldUpdateTeamData = true
+    }, (4 * 60 * 60 * 1000)) // hour * minute * second * millisecond
+
+    updateTeamData()
+  }
 
   setTimeout(() => {
-    console.log('setTimeOut calling and updating standings')
     updateData()
-  }, (5 * 60 * 1000)) // minute * second * millisecond, recommended call interval 5mins
+  }, (5 * 60 * 1000)) // minute * second * millisecond
   
-  try {
-    const standings = await getStandings()
-    // console.log('test', standings[0])
-
-    for (let team of standings) {
-      let dbTeam = await Team.findOneAndUpdate({ Name: team.Name }, team)
-
-      // if team is not found in Database, a new team is created
-      if (dbTeam === null) {
-        console.log('creating new team', team.City, team.Name)
-        let newTeam = new Team(team)
-        await newTeam.save()
-      }
-    }
-  } catch(e) {
-    console.log('error', e)
-  }
-  
+  updateStandings()
 }
 
-const getStandings = async () => {
-  const url = `https://fly.sportsdata.io/v3/nhl/scores/json/Standings/2021?key=${process.env.NHLAPIKEY}`
+const updateTeamData = async () => {
+  try {
+    console.log(`${new Date().toLocaleTimeString()} - updating team data`)
+    const teams = await getTeams()
+
+    for (let team of teams) {
+      let teamData = await TeamData.findOneAndUpdate({ TeamID: team.TeamID }, team)
+
+      if (teamData === null) {
+        console.log('inserting team data for', team.City, team.Name)
+        const newTeamData = new TeamData(team)
+        await newTeamData.save()
+      }
+    }
+  } catch (e) {
+    console.log('error', e)
+  }
+}
+
+const updateStandings = async () => {
+  try {
+    console.log(`${new Date().toLocaleTimeString()} - updating standings`)
+    const currentSeason = await getCurrentSeason() - 1 // REMOVE THIS -1
+
+    const standings = await getStandings(currentSeason)
+
+    for (let team of standings) {
+      let dbStanding = await TeamStanding.findOneAndUpdate({ Name: team.Name }, team)
+
+      // if team is not found in Database, a new team is created
+      if (dbStanding === null) {
+        console.log('creating new team', team.City, team.Name)
+        const newTeamStanding = new TeamStanding(team)
+        await newTeamStanding.save()
+      }
+    }
+  } catch (e) {
+    console.log('error', e)
+  }
+}
+
+// Recommended call interval: 5 mins
+const getStandings = async (currentSeason) => {
+  const url = `https://fly.sportsdata.io/v3/nhl/scores/json/Standings/${currentSeason}?key=${process.env.NHLAPIKEY}`
 
   return await axios.get(url)
     .then(response => {
@@ -64,6 +76,32 @@ const getStandings = async () => {
     })
 }
 
-const nhl = { updateData }
+// Recommended call interval: 4 hours
+const getTeams = async () => {
+  const url = `https://fly.sportsdata.io/v3/nhl/scores/json/teams?key=${process.env.NHLAPIKEY}`
+
+  return await axios.get(url)
+    .then(response => {
+      return response.data
+    })
+    .catch(e => {
+      return e
+    })
+}
+
+// Recommended call interval: 5 mins
+const getCurrentSeason = async () => {
+  const url = `https://fly.sportsdata.io/v3/nhl/scores/json/CurrentSeason?key=${process.env.NHLAPIKEY}`
+
+  return await axios.get(url)
+    .then(response => {
+      return response.data.Season
+    })
+    .catch(e => {
+      return e
+    })
+}
+
+const nhl = { updateData, getTeams }
 
 module.exports = nhl

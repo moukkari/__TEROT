@@ -12,14 +12,25 @@ const App = () => {
   const [message, setMessage] = useState(null)
   const [user, setUser] = useState(null)
   const [standings, setStandings] = useState([])
+  const [teamData, setTeamData] = useState([])
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/nhl')
+    axios.get('http://localhost:3001/api/nhl/standings')
       .then(res => {
-        const sortedStandings = res.data.sort((a, b) => ((a.Wins * 2) + a.OvertimeLosses) < ((b.Wins * 2) + b.OvertimeLosses) ? 1 : ((b.Wins * 2) + b.OvertimeLosses) < ((a.Wins * 2) + a.OvertimeLosses) ? -1 : 0)
-        console.log(sortedStandings[0])
+        const sortedStandings = res.data.sort((a, b) => {
+          const aw = a.Wins, ao = a.OvertimeLosses, bw = b.Wins, bo = b.OvertimeLosses
+          return ((aw * 2) + ao) < ((bw * 2) + bo) ? 1 : ((bw * 2) + bo) < ((aw * 2) + ao) ? -1 : 0
+        })   
+          
         setStandings(sortedStandings)
       })
+      .catch(e => console.log(e)) 
+    
+    axios.get('http://localhost:3001/api/nhl/teamData')
+      .then(res => {
+        setTeamData(res.data)
+      })
+      .catch(e => console.log(e))
   }, [])
   
   const createMessage = (msg, error = false) => {
@@ -58,7 +69,7 @@ const App = () => {
       <Row>
         <Col>
           {user ?
-          <GameGroupStatus user={user} />
+          <GameGroupStatus user={user} teamData={teamData} />
           :''}
         </Col> 
         <Col>

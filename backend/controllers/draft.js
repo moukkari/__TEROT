@@ -2,6 +2,7 @@ let clients = []
 let streamsOn = false
 const Draft = require('../models/draft')
 const mongoose = require('mongoose')
+const User = require('../models/user')
 
 /**
  * 
@@ -35,10 +36,9 @@ const draftRouter = async (ws, req) => {
       }
 
       clients[draftId].push(newUser)
-      console.log(clients)
+
     } else {
       console.log('connection already open with that web socket key')
-      console.log(clients)
     }
 
 
@@ -49,13 +49,12 @@ const draftRouter = async (ws, req) => {
         ws: ws,
         id: webSocketKey
       })
-      console.log(clients)
     } else if (clients[draftId].find(u => u.id === webSocketKey)) {
-      console.log('found')
+      console.log('found the user')
     } else {
       console.log('draft or user not found -> not adding to array')
-      console.log(clients)
     }
+    console.log(clients)
   } else {
     clients[draftId] = [{ 
       user: clientId, 
@@ -73,8 +72,8 @@ const draftRouter = async (ws, req) => {
   })
   */
 
-  ws.on('message', function(msg) {
-    console.log(msg)
+  ws.on('message', async function(msg) {
+    // console.log(msg)
     
     const broadcastRegex = /^broadcast\:/
     const teamChosenRegex = /^teamChosen\:/
@@ -85,7 +84,7 @@ const draftRouter = async (ws, req) => {
       //send back the message to the other clients
       clients[draftId]
         .forEach(client => {
-          console.log(client.user, client.id)
+          // console.log(client.user, client.id)
           if (client.ws !== ws) {
               client.ws.send(`Hello, broadcast message -> ${msg}`)
           } else {
@@ -94,15 +93,37 @@ const draftRouter = async (ws, req) => {
         })
         
     } else if (teamChosenRegex.test(msg)) {
-      clients[draftId]
-        .forEach(client => {
-          console.log(client.user, client.id)
-          if (client.ws !== ws) {
-              client.ws.send(`Team chosen -> ${msg}`)
-          } else {
-            console.log('not broadcasting to itself')
-          }
-        })
+      const teamId = msg.replace(teamChosenRegex, '')
+
+      console.log('draft+team', draftId, teamId)
+
+      let draft = await Draft.findOne({ _id: draftId })
+      let user = await User.findOne({ username: clientId })
+
+      if (draft && user) {
+        await draft.teamsLeft.pull(teamId)
+
+        await draft.teamsChosen.push({ team: teamId, user: user })
+
+        let newArray = [...draft.draftOrder]
+        newArray.push(newArray.shift())
+
+        draft.pick++
+
+        if (draft.pick > draft.picksPerRound) {
+          draft.round++
+          draft.pick = 1
+          newArray.reverse()
+        }
+
+        draft.draftOrder = newArray
+
+        if (draft.round > draft.totalRounds) {
+          draft.status = 'finished'
+        }
+
+        await draft.save()
+      }
     } else {
       ws.send('you sent this: ' + msg)
     }
@@ -134,11 +155,28 @@ const draftRouter = async (ws, req) => {
       
       const changeStream = Draft.watch()
 
-      changeStream.on('change', (change) => {
+      changeStream.on('change', async (change) => {
           console.log('db changed', change.documentKey._id)
-          //console.log(clients)
 
           if (clients[change.documentKey._id]) {
+            const newDraft = await Draft.findOne({ _id: change.documentKey._id })
+              .populate('draftOrder', { name: 1, username: 1 })
+              .populate('teamsLeft', { City: 1, Name: 1, Key: 1 })
+              .populate({
+                path: 'teamsChosen', 
+                populate: { 
+                  path: 'team',
+                  select: { City: 1, Name: 1, Key: 1 }
+                }
+              })
+              .populate({
+                path: 'teamsChosen', 
+                populate: { 
+                  path: 'user',
+                  select: { name: 1 }
+                }
+              })
+
             clients[change.documentKey._id].forEach(client => {
 
               /**
@@ -149,27 +187,16 @@ const draftRouter = async (ws, req) => {
               } 
               */
               // client.ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
-              client.ws.send('change:' + JSON.stringify(change))
+              client.ws.send('change:' + JSON.stringify(newDraft))
             })
           } else {
             ws.send(`Hello, some other db was changed`)
-          }
-          
-          /*
-          clients
-              .forEach(client => {
-                  if (client != ws) {
-                      client.client.send(`Hello, broadcast message -> ${JSON.stringify(change.updateDescription)}`);
-                  }    
-              })
-          */    
+          } 
       })
     } catch(e) {
       console.log('fucked up', e)
     }
   }
-  
-  
   
 }
 

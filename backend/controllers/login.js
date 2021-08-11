@@ -33,12 +33,12 @@ loginRouter.post('/', async (request, response) => {
   if (user.adminOf) { responseUser.adminOf = user.adminOf }
   if (user.invitations) { 
     const invitations = await GameGroup.find().where('_id').in(user.invitations).populate('admin').exec()
-    console.log(invitations)
+    // console.log(invitations)
     responseUser.invitations = invitations
   }
   if (user.gameGroups) {
     const groups = await GameGroup.find().where('_id').in(user.gameGroups).populate().exec()
-    console.log(groups)
+    // console.log(groups)
     responseUser.gameGroups = groups
   }
 

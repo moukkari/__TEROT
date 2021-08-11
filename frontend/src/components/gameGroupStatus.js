@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import LiveDraft from './liveDraft'
 
 
-export default function GameGroupStatus({ user }) {
+export default function GameGroupStatus({ user, teamData }) {
   const [gameGroups, setGameGroups] = useState([])
   const [selectedGroup, setSelectedGroup] = useState({})
   const [selectedOption, setSelectedOption] = useState('testi')
@@ -33,7 +33,7 @@ export default function GameGroupStatus({ user }) {
     <div>
       <h1>Kimppa</h1>
       {user && user.gameGroups && user.gameGroups.length > 0 && selectedGroup && selectedGroup.draft ? 
-          <LiveDraft username={user.username} draft={selectedGroup.draft} />
+          <LiveDraft username={user.username} draft={selectedGroup.draft} teamData={teamData} />
           : 'no drafts'}
       {toggle && user && user.gameGroups ?
       <div>
