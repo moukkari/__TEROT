@@ -1,7 +1,7 @@
 let clients = []
 let streamsOn = false
+let timers = []
 const Draft = require('../models/draft')
-const mongoose = require('mongoose')
 const User = require('../models/user')
 
 /**
@@ -68,7 +68,7 @@ const draftRouter = async (ws, req) => {
   /* // NOT working with express-ws
   ws.on('connection', () => {
     console.log('client connected', msg)
-    ws.send('heippa')
+    ws.send('heippaa')
   })
   */
 
@@ -97,33 +97,7 @@ const draftRouter = async (ws, req) => {
 
       console.log('draft+team', draftId, teamId)
 
-      let draft = await Draft.findOne({ _id: draftId })
-      let user = await User.findOne({ username: clientId })
-
-      if (draft && user) {
-        await draft.teamsLeft.pull(teamId)
-
-        await draft.teamsChosen.push({ team: teamId, user: user })
-
-        let newArray = [...draft.draftOrder]
-        newArray.push(newArray.shift())
-
-        draft.pick++
-
-        if (draft.pick > draft.picksPerRound) {
-          draft.round++
-          draft.pick = 1
-          newArray.reverse()
-        }
-
-        draft.draftOrder = newArray
-
-        if (draft.round > draft.totalRounds) {
-          draft.status = 'finished'
-        }
-
-        await draft.save()
-      }
+      pickATeam(draftId, teamId)
     } else {
       ws.send('you sent this: ' + msg)
     }
@@ -148,6 +122,8 @@ const draftRouter = async (ws, req) => {
     console.log('new request!', request)
   })
 
+
+  // STREAM WATCH STARTS HERE
   if (!streamsOn) {
     try {
       streamsOn = true
@@ -177,16 +153,16 @@ const draftRouter = async (ws, req) => {
                 }
               })
 
-            clients[change.documentKey._id].forEach(client => {
+            /*
+            if (change.updateDescription && 
+                change.updateDescription.updatedFields.status === 'started') {
+              console.log(change.documentKey._id, 'draft started')
+              console.log(change.updateDescription.updatedFields.draftOrder)
+              startTimer(change.documentKey._id, change.updateDescription.updatedFields.draftOrder[0])
+            }
+            */
 
-              /**
-              if (client.ws !== ws) {
-                client.ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
-              } else {
-                console.log('not broadcasting to itself')
-              } 
-              */
-              // client.ws.send(`Hello, database changed -> ${JSON.stringify(change.updateDescription)}`)
+            clients[change.documentKey._id].forEach(client => {
               client.ws.send('change:' + JSON.stringify(newDraft))
             })
           } else {
@@ -195,6 +171,73 @@ const draftRouter = async (ws, req) => {
       })
     } catch(e) {
       console.log('fucked up', e)
+    }
+  }
+
+  const startTimer = (draftId, playerInTurn) => {
+    console.log('startTimer called', draftId, playerInTurn)
+    timers[draftId] = setTimeout(() => {
+      pickATeam(draftId, null, playerInTurn)
+    }, (3 * 1000))
+  }
+
+  const pickATeam = async (draftId, teamId, playerInTurn = clientId) => {
+    let draft = await Draft.findOne({ _id: draftId })
+    let user = await User.findOne({ _id: playerInTurn })
+
+    // try to find user's prepicks
+    let prePicks = await draft.prePicks.find(p => p.user.toString() === playerInTurn.toString())
+
+    if (prePicks) {
+      for (const pick of prePicks.picks) {
+        const team = await draft.teamsLeft.find(t => t.toString() === pick.toString())
+        
+        if (team) {
+          teamId = team
+          break
+        }
+      }
+    }
+
+    if (!teamId) {
+      console.log('teams left: ', draft.teamsLeft.length)
+      teamId = draft.teamsLeft[Math.floor(Math.random() * draft.teamsLeft.length)]
+    } else {
+      console.log('closing timer for', playerInTurn)
+      clearTimeout(timers[draftId])
+    }
+
+    if (draft && user) {
+      await draft.teamsLeft.pull(teamId)
+
+      await draft.teamsChosen.push({ team: teamId, user: user })
+
+      let newArray = [...draft.draftOrder]
+      newArray.push(newArray.shift())
+
+      draft.pick++
+
+      if (draft.pick > draft.picksPerRound) {
+        draft.round++
+        draft.pick = 1
+        newArray.reverse()
+      }
+
+      draft.draftOrder = newArray
+
+      if (draft.round > draft.totalRounds) {
+        draft.status = 'finished'
+      } else {
+        startTimer(draft._id, draft.draftOrder[0])
+      }
+
+      await draft.save()
+    }
+  }
+
+  const forceStreamsOn = () => {
+    if (!streamsOn) {
+      streamsOn = true
     }
   }
   

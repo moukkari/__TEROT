@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react'
 import InviteUser from './inviteUser'
 import CreateGameGroup from './createGameGroup'
 import DraftSettings from './draftSettings'
-
+import { Button } from 'react-bootstrap'
 
 export default function GameGroupConfig({ user, setUser, createMessage }) {
   const [gameGroupData, setGameGroupData] = useState(null)
+  console.log('render')
 
   useEffect(() => {
     if (user.adminOf) {
@@ -24,22 +25,35 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
   }, [user])
 
   const removeGameGroup = () => {
+    const config = { headers: { Authorization: `bearer ${user.token}` } }
     if (window.confirm('Haluatko todella poistaa kimpan?')) {
-      axios.delete(`http://localhost:3001/api/gamegroup/${gameGroupData._id}`)
-      setGameGroupData(null)
+      axios.delete(`http://localhost:3001/api/gamegroup/${gameGroupData._id}`, config)
+        .then(response => {
+          console.log(response)
+          createMessage('Kimppa poistettu onnistuneesti')
+          setGameGroupData(null)
+        })
+        .catch(e => createMessage('Virhe kimppaa poistettaessa', true))
     }
   }
 
   return (
     <div>
+
+      <h3>Draft-asetukset</h3>
       {gameGroupData && gameGroupData.draft ?
         <div>
-          <button onClick={() => removeGameGroup()}>Poista kimppa</button>
+          <Button 
+            variant='danger' 
+            onClick={() => removeGameGroup()}
+            style={{ float: 'right' }}
+          >
+            Poista kimppa
+          </Button>
+
           <DraftSettings data={gameGroupData.draft} />
           <InviteUser user={user} gameGroupData={gameGroupData} />
-          {
-            JSON.stringify(gameGroupData, null, 2)
-          }
+          
         </div>
         :
         <CreateGameGroup user={user} createMessage={createMessage} setUser={setUser} /> 

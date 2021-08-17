@@ -1,19 +1,9 @@
 const nhlRouter = require('express').Router()
-const TeamData = require('../models/nhl/teamData')
-const TeamStanding = require('../models/nhl/teamStanding')
+const Team = require('../models/nhl/team')
 
-nhlRouter.get('/standings', async (request, response) => {
-  const standings = await TeamStanding.find({})
+nhlRouter.get('/', async (request, response) => {
+  const teamData = await Team.find({})
 
-  if (standings) {
-    response.status(200).send(standings)
-  } else {
-    response.status(400).send()
-  }
-})
-
-nhlRouter.get('/teamData', async (request, response) => {
-  const teamData = await TeamData.find({})
   if (teamData) {
     response.status(200).send(teamData)
   } else {

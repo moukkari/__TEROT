@@ -2,6 +2,7 @@ const Draft = require('../models/draft')
 const GameGroup = require('../models/gameGroup')
 const mongoose = require('mongoose')
 const scheduler = require('node-schedule')
+const draftRouter = require('../controllers/draft')
 
 const initialize = () => {
   try {
@@ -9,13 +10,24 @@ const initialize = () => {
     const changeStream = Draft.watch()
 
     changeStream.on('change', (change) => {
-        if (change.updateDescription && change.updateDescription.updatedFields.startingTime) {
-          console.log(`draft ${change.documentKey._id} changed starting time to 
-            ${change.updateDescription.updatedFields.startingTime}`)
-          scheduleDraft(change.documentKey._id, change.updateDescription.updatedFields.startingTime)
-        } else {
-          console.log('something else happened on draft db', change)
-        }
+      if (change.updateDescription && change.updateDescription.updatedFields.startingTime) {
+        console.log(`draft ${change.documentKey._id} changed starting time to 
+          ${change.updateDescription.updatedFields.startingTime}`)
+        scheduleDraft(change.documentKey._id, change.updateDescription.updatedFields.startingTime)
+      } else if (change.updateDescription && 
+        change.updateDescription.updatedFields.status === 'started') {
+        console.log(change.documentKey._id, 'draft started')
+        console.log(change.updateDescription.updatedFields.draftOrder)
+          /*
+        OTA WEBSOCKET YHTEYS JOKA KÄYNNISTÄÄ TARKISTUKSEN ONKO DRAFT KÄYNNISSÄ!
+        TAI/JA TEE DRAFTROUTERIIN ERILLINEN FUNKTIO JOKA KÄY LÄPI ONKO KO. DRAFTIIN OTETTU YHTEYTTÄ
+
+        TAI ERIYTÄ DRAFTROUTERIN FUNKTIOT DRAFT-SERVICEEN!!!
+          CLIENTIT, TIMERIT JA STREAM SERVICEEN
+          */
+      } else {
+          // console.log('something else happened on draft db', change.documentKey)
+      }
     })
   } catch(e) {
     console.log('fucked up', e)

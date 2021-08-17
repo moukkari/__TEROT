@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useState } from 'react'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { Button } from 'react-bootstrap'
 
 export default function DraftSettings({ data }) {
   const [oldDate, setOldDate] = useState(new Date(data.startingTime))
@@ -17,11 +18,11 @@ export default function DraftSettings({ data }) {
   }
 
   return (
-    <div>
-      <h4>Draft-asetukset</h4>
+    <div style={{ margin: '2em 0'}}>
       <p>
         Draft alkaa: {oldDate.toLocaleString('fi-FI')}
       </p>
+      <hr/>
       Vaihda aikaa: <DatePicker 
         selected={date}
         onChange={(d) => setDate(d)} 
@@ -30,7 +31,8 @@ export default function DraftSettings({ data }) {
         timeFormat="HH:mm"
         timeIntervals={15}
       />
-      <button onClick={() => saveDate()}>Tallenna</button>
+      &nbsp;
+      <Button onClick={() => saveDate()} variant='info'>Tallenna</Button>
     </div>
   )
 }

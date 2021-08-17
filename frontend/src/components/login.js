@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import loginService from '../services/login'
+import { Button, Row, Col } from 'react-bootstrap'
 
 export default function Login({ user, setUser, createMessage }) {
   const [username, setUsername] = useState('') 
@@ -7,7 +8,7 @@ export default function Login({ user, setUser, createMessage }) {
 
   useEffect(() => {
     const user = localStorage.getItem('kiakkoTeroUser')
-    console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
+    // console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
     if (user) {
       setUser(JSON.parse(user))
     }
@@ -34,37 +35,54 @@ export default function Login({ user, setUser, createMessage }) {
   }
 
   return (
-    <div>
+    <div style={{ marginBottom: '2em' }}>
       {!user ?
         <div>
-          <h2>Login</h2>
+          <h2>Kirjautuminen</h2>
           <form onSubmit={handleLogin}>
             <div>
-              username
                 <input
                 type="text"
                 value={username}
                 name="Username"
+                placeholder='Käyttäjätunnus'
                 onChange={({ target }) => setUsername(target.value)}
               />
             </div>
             <div>
-              password
                 <input
                 type="password"
                 value={password}
                 name="Password"
+                placeholder='Salasana'
                 onChange={({ target }) => setPassword(target.value)}
               />
             </div>
-            <button type="submit">login</button>
+            <Button 
+              type="submit" 
+              size='sm' 
+              variant='success'
+              style={{ marginTop: '4px' }}
+            >Kirjaudu sisään</Button>
           </form>
+          
         </div>
         :
-        <div>
-          <button onClick={() => logOut()}>Log out</button>
-          {user.username} logged in <button onClick={() => console.log(user)}>user</button>
-        </div>
+        <Row>
+          <Col xs={3} md={4}>
+            <p onClick={() => console.log(user)}>{user.username}</p>
+          </Col>
+          <Col xs={9} md={8}>
+            <Button 
+              onClick={() => logOut()} 
+              style={{ float: 'right', marginTop: '5px' }}
+              variant='secondary'
+              size='sm'
+            >
+              <strong>Kirjaudu ulos</strong>
+            </Button>
+          </Col>
+        </Row>
         }
       </div>
   )

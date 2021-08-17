@@ -1,12 +1,14 @@
 import axios from 'axios'
 import React from 'react'
+import { Button } from 'react-bootstrap'
 
 export default function AcceptInvitation({ user, setUser }) {
   let invitations = ''
 
   const accept = invitation => {
     console.log(invitation)
-    axios.put(`http://localhost:3001/api/gamegroup/accept/${invitation._id}`, { user: user.username })
+    const config = { headers: { Authorization: `bearer ${user.token}` } }
+    axios.put(`http://localhost:3001/api/gamegroup/accept/${invitation._id}`, null, config)
       .then(response => {
         if (response.status === 200) {
           console.log(response.data)
@@ -21,11 +23,10 @@ export default function AcceptInvitation({ user, setUser }) {
   }
 
   if (user && user.invitations) {
-    console.log('invitations', user.invitations)
     invitations = user.invitations.map(i => (
       <li key={i}>
         {i.name} - {i.admin.name}
-        <button onClick={() => accept(i)}>Hyväksy</button>
+        <Button onClick={() => accept(i)} size='sm' variant='success'>Hyväksy</Button>
       </li>)
     )
   }

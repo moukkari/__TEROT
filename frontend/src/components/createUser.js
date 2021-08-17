@@ -1,5 +1,6 @@
 import axios from 'axios'
 import React, { useState } from 'react'
+import { Button } from 'react-bootstrap'
 
 export default function CreateUser({ createMessage }) {
   const [toggle, setToggle] = useState(false)
@@ -15,9 +16,13 @@ export default function CreateUser({ createMessage }) {
 
       axios.post('http://localhost:3001/api/users', obj)
         .then(res => {
-          console.log(res)
-          createMessage('Käyttäjä luotiin onnistuneesti')
-          setNewUser({ name: '', username: '', password: '' })
+          if (res.status === 201) {
+            createMessage(`Käyttäjä ${obj.name} luotiin onnistuneesti`)
+            setNewUser({ name: '', username: '', password: '' })
+          } else {
+            console.log(res)
+            createMessage('Virhe käyttäjää luodessa', true)
+          }
         })
         .catch(e => {
           console.log(e)
@@ -29,8 +34,8 @@ export default function CreateUser({ createMessage }) {
   return (
     <div>
       {toggle ? 
-      <div style={{ fontSize: 'xx-small' }}>
-        <button style={{float:'right'}} onClick={() => setToggle(!toggle)}>Peruuta</button>
+      <div>
+        <Button style={{float:'right'}} onClick={() => setToggle(!toggle)}>Peruuta</Button>
         <h5>Luo uusi käyttäjä</h5>
         
         Käyttäjänimi: <br/>
@@ -42,10 +47,10 @@ export default function CreateUser({ createMessage }) {
         Salasana: <br/>
         <input value={newUser.password} onChange={({ target }) => setNewUser({ ...newUser, password: target.value })} type="password" />
         <br/>
-        <button onClick={createUser}>Luo käyttäjä</button>
+        <Button onClick={createUser} variant='success'>Luo käyttäjä</Button>
       </div>
       :
-      <button onClick={() => setToggle(!toggle)}>Luo käyttäjä</button>
+      <Button onClick={() => setToggle(!toggle)} size='lg'>Luo uusi käyttäjä</Button>
       }
     </div>
   )

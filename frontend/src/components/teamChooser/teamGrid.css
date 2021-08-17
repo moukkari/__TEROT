@@ -1,0 +1,41 @@
+.teamContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-gap: 2px;
+}
+
+.teamContainerChild {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.5em;
+    position: relative;
+    border: 1px solid black;
+    border-radius: 1em;
+}
+
+.teamLogo {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+}
+
+.chosenTeam {
+    border: 1px solid black;
+    border-radius: 1em;
+    margin-bottom: 1em;
+    max-height: 9em;
+}
+
+.chosenLogo {
+    margin: 1em;
+    max-height: 7em;
+    margin-left: 1.8em;
+    max-width: 90%;
+}
+
+h4 {
+    margin-top: 0.7em;
+}

@@ -1,6 +1,7 @@
 const config = require('./utils/config')
 const express = require('express')
 const mongoose = require('mongoose')
+require('express-async-errors')
 const app = express()
 // require('express-async-errors')
 const cors = require('cors')
@@ -30,7 +31,7 @@ mongoose.connect(config.MONGODB_URI, mongoOptions)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-nhlService.updateData()
+//nhlService.initialize()
 draftService.initialize()
 
 // app.use(express.static('build'))

@@ -2,12 +2,26 @@ const gameGroupRouter = require('express').Router()
 const GameGroup = require('../models/gameGroup')
 const User = require('../models/user')
 const Draft = require('../models/draft')
-const TeamData = require('../models/nhl/teamData')
+const Team = require('../models/nhl/team')
+const jwt = require('jsonwebtoken')
+
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
 
 gameGroupRouter.post('/create', async (request, response) => {
   const body = request.body
+  const token = getTokenFrom(request)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
 
-  const user = await User.findOne({ username: body.username }) 
+  const user = await User.findOne({ _id: decodedToken.id }) 
 
   // if a user is not found or the user already has made a gamegroup
   if (!user || await GameGroup.findOne({ admin: user })) {
@@ -15,50 +29,49 @@ gameGroupRouter.post('/create', async (request, response) => {
     return
   }
   
-  try {
-    const teams = await TeamData.find({})
+  const teams = await Team.find({})
 
-    const gameGroup = new GameGroup({
-      name: body.name,
-      admin: user._id,
-      players: [user._id]
-    })
-    
-    const newDraft = new Draft({
-      gameGroup: gameGroup,
-      teamsLeft: teams
-    })
-
-    await newDraft.save()
-    console.log('draft created')
-
-    gameGroup.draft = newDraft
-    
-    const savedGameGroup = await gameGroup.save()
-    console.log('group created')
-    user.adminOf = savedGameGroup._id
-    user.gameGroups.push(savedGameGroup)
-
-    const savedUser = await user.save()
-    console.log('user saved')
-
-    response.json(savedUser)
-    console.log('ok')
-  } catch(e) {
-    console.log('err')
-    response.json({ error: 'Olet jo kimpan ylläpitäjä' })
-  }
+  const gameGroup = new GameGroup({
+    name: body.name,
+    admin: user._id,
+    players: [user._id]
+  })
   
+  const newDraft = new Draft({
+    gameGroup: gameGroup,
+    teamsLeft: teams
+  })
+
+  await newDraft.save()
+  console.log('draft created')
+
+  gameGroup.draft = newDraft
+  
+  const savedGameGroup = await gameGroup.save()
+  console.log('group created')
+  user.adminOf = savedGameGroup._id
+  user.gameGroups.push(savedGameGroup)
+
+  const savedUser = await user.save()
+  console.log('user saved')
+
+  response.json(savedUser)
+  console.log('creating group went ok')
 })
 
 gameGroupRouter.delete('/:id', async (request, response) => {
-  const id = request.params.id
-  console.log('deleting: ' + id)
-  const gameGroup = await GameGroup.findOne({ _id: id })
+  const token = getTokenFrom(request)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
 
-  if (!gameGroup) {
-    response.json('eipä löytynyt')
-  } else {
+  const id = request.params.id
+  const gameGroup = await GameGroup.findOne({ admin: decodedToken.id })
+  console.log('deleting group: ' + id)
+
+
+  if (gameGroup) {
     const admin = await User.findOne({ adminOf: gameGroup })
     admin.adminOf = undefined
     await admin.save()
@@ -83,13 +96,16 @@ gameGroupRouter.delete('/:id', async (request, response) => {
     const draft = await Draft.findOne({ gameGroup: gameGroup._id })
     draft.remove()
 
-    response.json(`${id} poistettu`).end()
+    response.status(204).send()
+  } else {
+    response.status(400).json({ error: 'wrong user' })
   }
 })
 
 gameGroupRouter.get('/:id', async (request, response) => {
   const id = request.params.id
   const gameGroup = await GameGroup.findOne({ _id: id })
+    .populate('players', { name: 1 })
 
   if (!gameGroup) {
     response.json('eipä löytynyt: ' + id)
@@ -97,6 +113,35 @@ gameGroupRouter.get('/:id', async (request, response) => {
     response.json(gameGroup)
   }
 })
+
+gameGroupRouter.put('/accept/:id', async (request, response) => {
+  const token = getTokenFrom(request)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+
+  const id = request.params.id
+
+  console.log(id, request.body)
+
+  const gameGroup = await GameGroup.findOne({ _id: id })
+  const user = await User.findOne({ _id: decodedToken.id })
+
+  if (gameGroup && user ) {
+    gameGroup.players.push(user)
+    await gameGroup.save()
+
+    user.gameGroups.push(gameGroup._id)
+    user.invitations.pull(gameGroup._id)
+    const savedUser = await user.save().then(user => user.populate('gameGroups').execPopulate())
+    console.log(savedUser)
+    response.status(200).json(savedUser)
+  } else {
+    response.status(400).json({ error: 'user or gamegroup not found' })
+  }
+})
+
 
 gameGroupRouter.get('/draft/:id', async (request, response) => {
   const id = request.params.id
@@ -125,33 +170,6 @@ gameGroupRouter.get('/draft/:id', async (request, response) => {
   }
 })
 
-gameGroupRouter.put('/accept/:id', async (request, response) => {
-  const id = request.params.id
-
-  console.log(id, request.body)
-
-  try {
-    const gameGroup = await GameGroup.findOne({ _id: id })
-    const user = await User.findOne({ username: request.body.user })
-
-    if (!gameGroup || !user ) {
-      response.json('error accepting invitation')
-    } else {
-      gameGroup.players.push(user)
-      await gameGroup.save()
-
-      user.gameGroups.push(gameGroup._id)
-      user.invitations.pull(gameGroup._id)
-      const savedUser = await user.save()
-      console.log(savedUser)
-      response.status(200).json( { msg: 'invitation accepted succesfully', data: { savedUser } } )
-    }
-  } catch(e) {
-    response.status(400).json('error accepting')
-  }
-})
-
-
 gameGroupRouter.put('/draft/:id', async (request, response) => {
   try {
     const id = request.params.id
@@ -173,6 +191,34 @@ gameGroupRouter.put('/draft/:id', async (request, response) => {
     response.json('erroria pirusti')
   }
   
+})
+
+gameGroupRouter.put('/draft/:id/prePicks', async (request, response) => {
+  try {
+    const id = request.params.id
+    const body = request.body.body
+    // console.log(id, body)
+
+    const draft = await Draft.findOne({ _id: id })
+
+    if (draft) {
+      draft.prePicks = await draft.prePicks.filter(p => {
+        console.log(p.user, body.userId, p.user.toString() === body.userId)
+        return p.user.toString() !== body.userId
+      })
+
+      await draft.prePicks.push({ user: body.userId, picks: body.picks })
+
+      console.log(`added prepicks for ${body.userId}`)
+
+      await draft.save()
+      response.send('ok')
+    } else {
+      response.send('draft not found')
+    }
+  } catch {
+    console.log('error')
+  }
 })
 
 module.exports = gameGroupRouter

@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const uniqueValidator = require('mongoose-unique-validator')
 
 
-const teamStandingSchema = mongoose.Schema({
+const teamSchema = mongoose.Schema({
   Season: Number,
   SeasonType: Number,
   TeamID: Number,
@@ -22,15 +22,24 @@ const teamStandingSchema = mongoose.Schema({
   ShutoutWins: Number,
   ConferenceRank: Number,
   DivisionRank: Number,
-  GlobalTeamID: Number
+  GlobalTeamID: Number,
+
+  Active: Boolean,
+  StadiumID: Number,
+  PrimaryColor: String,
+  SecondaryColor: String,
+  TertiaryColor: String,
+  QuaternaryColor: String,
+  WikipediaLogoUrl: String,
+  WikipediaWordMarkUrl: String
 })
 
-teamStandingSchema.plugin(uniqueValidator)
+teamSchema.plugin(uniqueValidator)
 
-teamStandingSchema.set('toJSON', {
+teamSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
+    //returnedObject.id = returnedObject._id.toString()
+    //delete returnedObject._id
     delete returnedObject.__v
     delete returnedObject.ConferenceLosses
     delete returnedObject.ConferenceRank
@@ -42,6 +51,6 @@ teamStandingSchema.set('toJSON', {
   }
 })
 
-const TeamStanding = mongoose.model('TeamStanding', teamStandingSchema)
+const Team = mongoose.model('Team', teamSchema)
 
-module.exports = TeamStanding
+module.exports = Team

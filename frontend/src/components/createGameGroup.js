@@ -1,5 +1,6 @@
 import axios from 'axios'
 import React, { useState } from 'react'
+import { Button } from 'react-bootstrap'
 
 export default function CreateGameGroup({ user, createMessage, setUser }) {
   const [groupName, setGroupName] = useState('')
@@ -12,11 +13,12 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
 
     const request = {
       username: user.username,
-      token: user.token,
       name: groupName
     }
 
-    axios.post('http://localhost:3001/api/gamegroup/create', request)
+    const config = { headers: { Authorization: `bearer ${user.token}` } }
+
+    axios.post('http://localhost:3001/api/gamegroup/create', request, config)
       .then((res) => {
         console.log(res)
         if (res.data.error) {
@@ -24,7 +26,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
         } else {
           createMessage('Kimppa luotu onnistuneesti')
           console.log(res.data)
-          setUser(res.data)
+          setUser({ ...user, ...res.data })
           localStorage.setItem('kiakkoTeroUser', JSON.stringify(res.data))
         }
       })
@@ -36,10 +38,11 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
 
   return (
     <div>
-      <h2>Luo kimppa</h2>
+      <h4>Luo kimppa</h4>
         Kimpan nimi:
         <input value={groupName} onChange={({ target }) => setGroupName(target.value)} />
-        <button onClick={createGroup}>Create</button>
+        &nbsp;
+        <Button onClick={createGroup} variant='success'>Luo kimppa</Button>
     </div>
   )
 }

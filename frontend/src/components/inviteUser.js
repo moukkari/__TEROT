@@ -1,5 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
+import { Button, Table } from 'react-bootstrap'
 
 export default function InviteUser({ user, gameGroupData }) {
   const [users, setUsers] = useState([{}])
@@ -11,7 +12,8 @@ export default function InviteUser({ user, gameGroupData }) {
         let filteredUsers = response.data.filter(u => u.username !== user.username)
         setUsers(filteredUsers)
       })
-  }, [user.username])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const invite = otherUser => {
     let request = { ...otherUser, invite: user.adminOf }
@@ -19,7 +21,7 @@ export default function InviteUser({ user, gameGroupData }) {
       .then(response => {
         console.log(response)
         if (response.status === 200) {
-          let userToUpdate = users.find(u => otherUser.id === u.id)
+          let userToUpdate = users.find(u => otherUser._id === u._id)
           userToUpdate.invitations.push(user.adminOf)
           setUsers([ ...users ])
         }
@@ -29,26 +31,30 @@ export default function InviteUser({ user, gameGroupData }) {
   const usersList = users.map((otherUser, i) => {
     let option = ''
     if (otherUser.invitations && otherUser.invitations.includes(user.adminOf)) {
-      option = ' - Kutsuttu'
-    } else if (gameGroupData.players && gameGroupData.players.includes(otherUser.id)) {
-      option = ' - Liittynyt'
+      option = 'Kutsuttu'
+    } else if (gameGroupData.players && gameGroupData.players.some(p => p._id === otherUser._id)) {
+      option = 'Liittynyt'
     } else {
-      option = <button onClick={() => invite(otherUser)}>invite</button>
+      option = <Button onClick={() => invite(otherUser)} size='sm' variant='success'>Kutsu</Button>
     }
     return (
-      <li key={i}>
-        {otherUser.username} 
-        {option}
-      </li>
+      <tr key={i}>
+        <td>{otherUser.username} </td>
+        <td>{otherUser.name} </td>
+        <td>{option}</td>
+      </tr>
     )
   })
 
   return (
     <div>
       <h3>Kutsu käyttäjiä kimppaan</h3>
-      <ul>
-        {usersList}
-      </ul>
+      <Table>
+        <tbody>
+          {usersList}
+        </tbody>
+        
+      </Table>
       
     </div>
   )
