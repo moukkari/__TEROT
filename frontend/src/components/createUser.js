@@ -14,7 +14,7 @@ export default function CreateUser({ createMessage }) {
         password: newUser.password
       }
 
-      axios.post('http://localhost:3001/api/users', obj)
+      axios.post('http://api.kiakkoterot.fi/api/users', obj)
         .then(res => {
           if (res.status === 201) {
             createMessage(`Käyttäjä ${obj.name} luotiin onnistuneesti`)

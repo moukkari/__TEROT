@@ -4,17 +4,27 @@ import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { Button } from 'react-bootstrap'
 
-export default function DraftSettings({ data }) {
-  const [oldDate, setOldDate] = useState(new Date(data.startingTime))
-  const [date, setDate] = useState(new Date(data.startingTime))
+export default function DraftSettings({ draft, createMessage }) {
+  const [oldDate, setOldDate] = useState(new Date(draft.startingTime))
+  const [date, setDate] = useState(new Date(draft.startingTime))
+  const [timeForTakingPick, setTimeForTakingPick] = useState(draft.timeForTakingPick || 60)
 
-  const saveDate = () => {
-    axios.put(`http://localhost:3001/api/gamegroup/draft/${data._id}`, { date: date })
+  const saveData = () => {
+    if (timeForTakingPick < 15) {
+      createMessage('Ajan pitää olla vähintään 15 sekuntia', true)
+      return
+    }
+    const change = { 
+      startingTime: date,
+      timeForTakingPick: timeForTakingPick
+    }
+    axios.put(`http://api.kiakkoterot.fi/api/gamegroup/draft/${draft._id}`, change)
       .then(response => {
         console.log(response)
         setOldDate(new Date(response.data.startingTime))
+        createMessage('Asetukset päivitettiin onnistuneesti')
       })
-      .catch(e => console.log(e))
+      .catch(e => createMessage('Virhe asetuksia tallentaessa', true))
   }
 
   return (
@@ -32,7 +42,15 @@ export default function DraftSettings({ data }) {
         timeIntervals={15}
       />
       &nbsp;
-      <Button onClick={() => saveDate()} variant='info'>Tallenna</Button>
+      <p>
+        Aikaa joukkueen valitsemiseen (oletus: 60): 
+        <input 
+          type='number' 
+          value={timeForTakingPick} 
+          onChange={(e) => setTimeForTakingPick(e.target.value)} 
+        />
+      </p>
+      <Button onClick={() => saveData()} variant='info'>Tallenna</Button>
     </div>
   )
 }

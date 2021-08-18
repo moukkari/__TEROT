@@ -178,8 +178,9 @@ gameGroupRouter.put('/draft/:id', async (request, response) => {
 
     const draft = await Draft.findOne({ _id: id })
 
-    if (draft && body.date) {
-      draft.startingTime = body.date
+    if (draft && body) {
+      draft.startingTime = body.startingTime
+      draft.timeForTakingPick = body.timeForTakingPick
 
       const savedDraft = await draft.save()
 

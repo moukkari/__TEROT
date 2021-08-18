@@ -4,12 +4,12 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import axios from 'axios'
 import { Button } from 'react-bootstrap'
 
-export default function PreOrder({ user, draft, teamData }) {
+export default function PreOrder({ user, draft, teamData, createMessage }) {
     const [teamOrder, setTeamOrder] = useState(teamData)
 
     const save = () => {
         const body = { userId: user._id, picks: teamOrder.map(t => t._id) }
-        axios.put(`http://localhost:3001/api/gamegroup/draft/${draft._id}/prePicks`, { body })
+        axios.put(`http://api.kiakkoterot.fi/api/gamegroup/draft/${draft._id}/prePicks`, { body })
             .then(response => {
                 console.log(response)
             })

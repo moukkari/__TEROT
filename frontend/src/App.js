@@ -14,23 +14,12 @@ const App = () => {
   const [teamData, setTeamData] = useState([])
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/nhl/')
+    console.log('updating season standings')
+    axios.get('http://api.kiakkoterot.fi/api/nhl/')
       .then(res => {
         setTeamData(res.data)
       })
       .catch(e => console.log(e)) 
-    if (user) {
-      console.log('called token check')
-      const config = { headers: { Authorization: `bearer ${user.token}` } }
-      axios.get('http://localhost:3001/api/login', config)
-        .then(response => {
-          console.log('valid token')
-        })
-        .catch(e => {
-          setUser(null)
-          createMessage('Kirjaudutaan ulos...', true)
-        })
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
@@ -44,7 +33,7 @@ const App = () => {
       color: 'white',
       zIndex: 1
     }
-    style.backgroundColor = error ? 'red' : 'green'
+    style.backgroundColor = error ? 'rgba(255,0,0,0.9)' : 'rgba(0,128,0,0.9)'
     setMessage(<h3 style={style} onClick={() => setMessage(null)}>{msg}</h3>)
     setTimeout(() => {
       setMessage(null)

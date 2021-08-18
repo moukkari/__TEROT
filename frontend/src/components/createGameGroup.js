@@ -18,7 +18,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
 
     const config = { headers: { Authorization: `bearer ${user.token}` } }
 
-    axios.post('http://localhost:3001/api/gamegroup/create', request, config)
+    axios.post('http://api.kiakkoterot.fi/api/gamegroup/create', request, config)
       .then((res) => {
         console.log(res)
         if (res.data.error) {
@@ -26,8 +26,9 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
         } else {
           createMessage('Kimppa luotu onnistuneesti')
           console.log(res.data)
-          setUser({ ...user, ...res.data })
-          localStorage.setItem('kiakkoTeroUser', JSON.stringify(res.data))
+          const newUser = { ...user, ...res.data }
+          setUser(newUser)
+          localStorage.setItem('kiakkoTeroUser', JSON.stringify(newUser))
         }
       })
       .catch(e => { 
@@ -42,7 +43,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
         Kimpan nimi:
         <input value={groupName} onChange={({ target }) => setGroupName(target.value)} />
         &nbsp;
-        <Button onClick={createGroup} variant='success'>Luo kimppa</Button>
+        <Button onClick={() => createGroup()} variant='success'>Luo kimppa</Button>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'http://localhost:3001/api/login'
+const baseUrl = 'http://api.kiakkoterot.fi/api/login'
 
 const login = async credentials => {
   console.log('login')

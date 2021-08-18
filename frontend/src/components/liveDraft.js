@@ -1,44 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import { w3cwebsocket as W3CWebSocket } from "websocket"
-import axios from 'axios'
 import TeamChooser from './teamChooser/teamChooser'
-import Countdown from './countDown';
+import Countdown from './countDown'
+import DraftedTeams from './draftedTeams'
 
 export default function LiveDraft({ user, draft, teamData }) {
-  const [client, setClient] = useState(null)
-  const [liveDraft, setLiveDraft] = useState()
-  
-
-  console.log('render')
-
-  useEffect(() => {
-    axios.get(`http://localhost:3001/api/gamegroup/draft/${draft._id}`)
-        .then(response => {
-          setLiveDraft(response.data)
-        })
-        .catch(e => {
-          console.log(e)
-        })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client])
+  const [client, setClient] = useState()
+  const [liveDraft, setLiveDraft] = useState(draft)
 
   useEffect(() => {
     if (client) {
       client.close()
     }
     console.log(user._id, user)
-    setClient(new W3CWebSocket(`ws://localhost:3001/draft/${draft._id}/${user._id}`))
+    setClient(new W3CWebSocket(`ws://ws.kiakkoterot.fi:80/draft/${draft._id}/${user._id}`))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft._id, user._id])
   
+  
   useEffect(() => {
     if (client) {
+      console.log('ws client exists')
       client.onopen = () => {
         console.log('WebSocket Client Connected')
-        client.send('Client sending instant MOI!x')
+        keepConnectionAlive()
       }
       client.onmessage = (message) => {
-        
+        console.log(message)
         if (message.data.startsWith('change:')) {
           let newDraft = JSON
             .parse(message.data.replace('change:', ''))
@@ -47,6 +35,8 @@ export default function LiveDraft({ user, draft, teamData }) {
           setLiveDraft(newDraft)
         }
       }
+    } else {
+      console.log('websocket client not found')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client])
@@ -59,28 +49,31 @@ export default function LiveDraft({ user, draft, teamData }) {
   const close = () => {
     client.close()
   }
-
-  const broadcast = () => {
-    client.send(`broadcast:${username} broadcasting!`)
-  }
 */
+  const broadcast = () => {
+    client.send(`broadcast:${user.name} broadcasting!`)
+  }
+
+  const keepConnectionAlive = () => {
+    if (liveDraft.status !== 'finished' && client) {
+      client.send('keep me alive')
+      setTimeout(() => {
+        keepConnectionAlive()
+      }, 15000)
+    }
+  }
 
   const chooseTeam = (team) => {
     console.log(team)
-
-    if (liveDraft.draftOrder[0].username === user.username && 
-          window.confirm(`Haluatko todella valita joukkueen ${team.City} ${team.Name}?`)) {
-      client.send(`teamChosen:${team._id}`)
-    } else {
-      console.log(user)
-    }
+    client.send(`teamChosen:${liveDraft._id}:${user._id}:${team._id}`)
   }
 
   return (
     <div>
       {liveDraft ? 
+      
       <div>
-        
+        <button onClick={() => broadcast()}>broadcast</button>
 
         {liveDraft.status === 'started' ?
         <div>
@@ -91,7 +84,10 @@ export default function LiveDraft({ user, draft, teamData }) {
             {liveDraft.draftOrder.map((user, i) => <li key={i}>{user.username}</li>)}  
           </ol>
           {liveDraft.draftOrder[0].username === user.username ?
-            <p>Sinun vuorosi!</p>
+            <div>
+              <p>Sinun vuorosi!</p>
+              <TeamChooser liveDraft={liveDraft} chooseTeam={chooseTeam} teamData={teamData} />
+            </div>
             :
             <p>Vuorossa {liveDraft.draftOrder[0].name}</p>
           }
@@ -104,26 +100,16 @@ export default function LiveDraft({ user, draft, teamData }) {
             </ul>
             */}
             
-            <TeamChooser liveDraft={liveDraft} chooseTeam={chooseTeam} teamData={teamData} />
+            
           
         </div>
         : 
         <Countdown liveDraft={liveDraft} />
         }
         {liveDraft.status === 'finished' ? 
-          <div>
-            <h4>Valitut tiimit</h4>
-            <ul>
-              {liveDraft.teamsChosen.map((element, i) => {
-                const data = teamData.find(t => t.Key === element.team.Key)
-                return <li key={i}>
-                  <img src={data.WikipediaLogoUrl} alt='' width='10px' />
-                  {element.team.Key} - {element.user.name}
-                  </li>
-              })}
-            </ul>
-          </div>
-          : ''}
+          ''
+          : <DraftedTeams draft={liveDraft} teamData={teamData} />
+        }
       </div>
       : 'Livedraft ei ole käynnissä'
       }

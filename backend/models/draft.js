@@ -52,7 +52,8 @@ const draftSchema = mongoose.Schema({
         }
       ]
     }
-  ]
+  ],
+  timeForTakingPick: { type: Number, default: 60 }
 })
 
 draftSchema.plugin(require('mongoose-autopopulate'))

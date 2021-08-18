@@ -18,7 +18,7 @@ export default function GameGroupHandler({ user, teamData, setUser, createMessag
 
             <Switch>
                 <Route exact path='/'>
-                    <GameGroupStatus user={user} teamData={teamData} />
+                    <GameGroupStatus user={user} teamData={teamData} createMessage={createMessage} />
                 </Route>
                 <Route exact path='/admin'>
                     <GameGroupConfig user={user} setUser={setUser} createMessage={createMessage} /> 

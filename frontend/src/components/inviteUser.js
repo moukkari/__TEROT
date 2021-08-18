@@ -6,7 +6,7 @@ export default function InviteUser({ user, gameGroupData }) {
   const [users, setUsers] = useState([{}])
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/users')
+    axios.get('http://api.kiakkoterot.fi/api/users')
       .then(response => {
         // removes the logged in user from the users list
         let filteredUsers = response.data.filter(u => u.username !== user.username)
@@ -17,7 +17,7 @@ export default function InviteUser({ user, gameGroupData }) {
 
   const invite = otherUser => {
     let request = { ...otherUser, invite: user.adminOf }
-    axios.post('http://localhost:3001/api/users/invite', request)
+    axios.post('http://api.kiakkoterot.fi/api/users/invite', request)
       .then(response => {
         console.log(response)
         if (response.status === 200) {

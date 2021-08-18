@@ -3,31 +3,35 @@ import LiveDraft from './liveDraft'
 import PreOrder from './preOrder/preOrder'
 import axios from 'axios'
 import { Table } from 'react-bootstrap'
+import DraftedTeams from './draftedTeams'
+
 import { Link } from 'react-router-dom'
 
-export default function GameGroupStatus({ user, teamData }) {
+export default function GameGroupStatus({ user, teamData, createMessage }) {
   const [gameGroups, setGameGroups] = useState([])
-  const [selectedGroup, setSelectedGroup] = useState({})
+  const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedOption, setSelectedOption] = useState('testi')
+  const [draft, setDraft] = useState(null)
 
   useEffect(() => {
-    console.log('called')
     if (user && user.gameGroups.length > 0) {
-
-      
       setGameGroups(user.gameGroups.map(g => <option key={`g${g._id}`} value={g._id}>{g.name}</option>))
-
-      axios.get(`http://localhost:3001/api/gameGroup/${user.gameGroups[0]._id}`)
-        .then(response => {
-          if (response) {
-            setSelectedGroup(response.data)
-          } else {
-            console.log('error', response)
-          }
-        })
-        .catch(e => console.log(e))
+      getGroupData(user.gameGroups[0]._id)
     }
   }, [user])
+
+  useEffect(() => {
+    if (selectedGroup && selectedGroup.draft) {
+      axios.get(`http://api.kiakkoterot.fi/api/gamegroup/draft/${selectedGroup.draft._id}`)
+        .then(response => {
+          setDraft(response.data)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGroup])
 
   const changeGameGroup = value => {
     console.log(user.gameGroups)
@@ -35,11 +39,20 @@ export default function GameGroupStatus({ user, teamData }) {
     if (group) {
       console.log(group)
       setSelectedOption(value)
-      setSelectedGroup(group)
+      getGroupData(group._id)
     } else { 
       console.log('group not found')
     }
-    
+  }
+
+  const getGroupData = (groupId) => {
+    axios.get(`http://api.kiakkoterot.fi/api/gameGroup/${groupId}`)
+        .then(response => {
+          if (response.data) {
+            setSelectedGroup(response.data)
+          }
+        })
+        .catch(e => console.log(e))
   }
 
   const GroupStandings = () => {
@@ -88,9 +101,18 @@ export default function GameGroupStatus({ user, teamData }) {
     )
   }
 
+  const Admin = () => {
+    const admin = selectedGroup.players.find(p => p._id === selectedGroup.admin)
+    if (admin) return admin.name
+    else return 'undefined'
+  }
+  
+
   const GroupInfo = () => {
+    console.log(selectedGroup)
     return (
       <div style={{ marginBottom: '3em' }}>
+        <button onClick={() => console.log(selectedGroup)}>selectedGroup</button>
         <table>
           <thead>
             <tr>
@@ -100,7 +122,7 @@ export default function GameGroupStatus({ user, teamData }) {
           <tbody>
             <tr>
               <td>Ylläpitäjä</td>
-              <td>{selectedGroup.players.find(p => p._id === selectedGroup.admin.name)}</td>
+              <td><Admin /></td>
             </tr>
             <tr>
               <td>Draftin tila</td>
@@ -116,44 +138,43 @@ export default function GameGroupStatus({ user, teamData }) {
       </div>
     )
   }
+      
 
   return (
     <div>
       <h2>Kimpat</h2>
-
-      {/** 
       
-      {user && user.gameGroups && user.gameGroups.length > 0 && selectedGroup && selectedGroup.draft ? 
-          
-          : 'no drafts'}
-          
-      */}
-      
-      
-      {user && user.gameGroups.length > 0 && selectedGroup ?
+      {user && user.gameGroups.length > 0 && draft ?
         <div>
           Valitse kimppa:&nbsp;
           <select value={selectedOption} onChange={({ target }) => changeGameGroup(target.value)}>
             {gameGroups}
           </select>
           <hr/>
+
           {selectedGroup.players ?
             <GroupInfo />
             : ''
           }
-          {selectedGroup.status === 'finished' ?
+
+          {draft.status === 'finished' ?
             <GroupStandings />
             :
-            <div>
-              {selectedGroup.draft ?
-                <div>
-                  <LiveDraft user={user} draft={selectedGroup.draft} teamData={teamData} />
-                  <PreOrder user={user} draft={selectedGroup.draft} teamData={teamData} />
-                </div>
-                : ''
-              }
-              
-           </div>
+            <LiveDraft user={user} draft={draft} teamData={teamData} />
+          }
+          {draft.teamsChosen.length > 0 && draft.status !== 'started' ? 
+            <DraftedTeams draft={draft} teamData={teamData} />
+            : ''
+          }
+          {draft.status === 'scheduled' ?
+            <PreOrder 
+              user={user} 
+              draft={selectedGroup.draft} 
+              teamData={teamData} 
+              createMessage={createMessage}
+            />
+            : 
+            ''
           }
           
         </div>

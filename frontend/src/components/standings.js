@@ -7,8 +7,13 @@ export default function Standings({ teamData }) {
       return ((aw * 2) + ao) < ((bw * 2) + bo) ? 1 : ((bw * 2) + bo) < ((aw * 2) + ao) ? -1 : 0
     }) 
 
+    const standingLogo = {
+      width: 'auto',
+      maxHeight: '30px'
+    }
+
     return (
-      <Table striped bordered>
+      <Table striped bordered size='sm'>
         <thead>
           <tr> 
             <th></th>
@@ -20,7 +25,9 @@ export default function Standings({ teamData }) {
           {sortedStandings.map(team => {
             return (
               <tr key={team.Name} onClick={() => console.log(team)}>
-                <td width='15%' ><img alt={team.Key} src={team.WikipediaLogoUrl} width='100%' /></td>
+                <td width='15%' style={{ textAlign: 'center' }}>
+                  <img alt={team.Key} src={team.WikipediaLogoUrl} style={standingLogo} />
+                </td>
                 <td>{team.City} {team.Name}</td>
                 <td>{(team.Wins * 2) + team.OvertimeLosses}</td>
               </tr>

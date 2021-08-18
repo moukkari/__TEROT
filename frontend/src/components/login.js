@@ -1,17 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import loginService from '../services/login'
 import { Button, Row, Col } from 'react-bootstrap'
+import axios from 'axios'
 
 export default function Login({ user, setUser, createMessage }) {
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
 
+  console.log('called login', user)
+
   useEffect(() => {
-    const user = localStorage.getItem('kiakkoTeroUser')
+    const storageUser = JSON.parse(localStorage.getItem('kiakkoTeroUser'))
     // console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
-    if (user) {
-      setUser(JSON.parse(user))
+    if (storageUser) {
+      const config = { headers: { Authorization: `bearer ${storageUser.token}` } }
+      axios.get('http://api.kiakkoterot.fi/api/login', config)
+        .then(response => {
+          console.log('valid token')
+          setUser(storageUser)
+        })
+        .catch(e => {
+          console.log(e)
+          setUser(null)
+          localStorage.removeItem('kiakkoTeroUser')
+          createMessage('Istunto vanhentunut. Kirjaudutaan ulos...', true)
+        })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setUser])
 
   const handleLogin = async (event) => {
@@ -38,7 +53,7 @@ export default function Login({ user, setUser, createMessage }) {
     <div style={{ marginBottom: '2em' }}>
       {!user ?
         <div>
-          <h2>Kirjautuminen</h2>
+          <h3>Kirjautuminen</h3>
           <form onSubmit={handleLogin}>
             <div>
                 <input

@@ -8,7 +8,7 @@ export default function AcceptInvitation({ user, setUser }) {
   const accept = invitation => {
     console.log(invitation)
     const config = { headers: { Authorization: `bearer ${user.token}` } }
-    axios.put(`http://localhost:3001/api/gamegroup/accept/${invitation._id}`, null, config)
+    axios.put(`http://api.kiakkoterot.fi/api/gamegroup/accept/${invitation._id}`, null, config)
       .then(response => {
         if (response.status === 200) {
           console.log(response.data)

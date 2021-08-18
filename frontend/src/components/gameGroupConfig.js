@@ -11,7 +11,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
 
   useEffect(() => {
     if (user.adminOf) {
-      axios.get(`http://localhost:3001/api/gamegroup/${user.adminOf}`)
+      axios.get(`http://api.kiakkoterot.fi/api/gamegroup/${user.adminOf}`)
         .then(response => {
           // console.log(res)
           setGameGroupData(response.data)
@@ -25,9 +25,10 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
   }, [user])
 
   const removeGameGroup = () => {
+    console.log(user.token)
     const config = { headers: { Authorization: `bearer ${user.token}` } }
     if (window.confirm('Haluatko todella poistaa kimpan?')) {
-      axios.delete(`http://localhost:3001/api/gamegroup/${gameGroupData._id}`, config)
+      axios.delete(`http://api.kiakkoterot.fi/api/gamegroup/${gameGroupData._id}`, config)
         .then(response => {
           console.log(response)
           createMessage('Kimppa poistettu onnistuneesti')
@@ -51,7 +52,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
             Poista kimppa
           </Button>
 
-          <DraftSettings data={gameGroupData.draft} />
+          <DraftSettings draft={gameGroupData.draft} createMessage={createMessage} />
           <InviteUser user={user} gameGroupData={gameGroupData} />
           
         </div>
