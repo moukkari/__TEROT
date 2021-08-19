@@ -4,6 +4,8 @@ import InviteUser from './inviteUser'
 import CreateGameGroup from './createGameGroup'
 import DraftSettings from './draftSettings'
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function GameGroupConfig({ user, setUser, createMessage }) {
   const [gameGroupData, setGameGroupData] = useState(null)
@@ -11,7 +13,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
 
   useEffect(() => {
     if (user.adminOf) {
-      axios.get(`http://api.kiakkoterot.fi/api/gamegroup/${user.adminOf}`)
+      axios.get(`${APIURL}/api/gamegroup/${user.adminOf}`)
         .then(response => {
           // console.log(res)
           setGameGroupData(response.data)
@@ -28,7 +30,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
     console.log(user.token)
     const config = { headers: { Authorization: `bearer ${user.token}` } }
     if (window.confirm('Haluatko todella poistaa kimpan?')) {
-      axios.delete(`http://api.kiakkoterot.fi/api/gamegroup/${gameGroupData._id}`, config)
+      axios.delete(`${APIURL}/api/gamegroup/${gameGroupData._id}`, config)
         .then(response => {
           console.log(response)
           createMessage('Kimppa poistettu onnistuneesti')

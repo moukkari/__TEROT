@@ -1,6 +1,8 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function CreateGameGroup({ user, createMessage, setUser }) {
   const [groupName, setGroupName] = useState('')
@@ -18,7 +20,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
 
     const config = { headers: { Authorization: `bearer ${user.token}` } }
 
-    axios.post('http://api.kiakkoterot.fi/api/gamegroup/create', request, config)
+    axios.post(`${APIURL}/api/gamegroup/create`, request, config)
       .then((res) => {
         console.log(res)
         if (res.data.error) {

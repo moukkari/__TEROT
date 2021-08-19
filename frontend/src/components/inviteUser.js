@@ -1,12 +1,14 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { Button, Table } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function InviteUser({ user, gameGroupData }) {
   const [users, setUsers] = useState([{}])
 
   useEffect(() => {
-    axios.get('http://api.kiakkoterot.fi/api/users')
+    axios.get(`${APIURL}/api/users`)
       .then(response => {
         // removes the logged in user from the users list
         let filteredUsers = response.data.filter(u => u.username !== user.username)
@@ -17,7 +19,7 @@ export default function InviteUser({ user, gameGroupData }) {
 
   const invite = otherUser => {
     let request = { ...otherUser, invite: user.adminOf }
-    axios.post('http://api.kiakkoterot.fi/api/users/invite', request)
+    axios.post(`${APIURL}/api/users/invite`, request)
       .then(response => {
         console.log(response)
         if (response.status === 200) {

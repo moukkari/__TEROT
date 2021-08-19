@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import LiveDraft from './liveDraft'
-import PreOrder from './preOrder/preOrder'
+import PrePicks from './prePicks/prePicks'
 import axios from 'axios'
 import { Table } from 'react-bootstrap'
 import DraftedTeams from './draftedTeams'
-
 import { Link } from 'react-router-dom'
+import { APIURL } from '../services/addresses'
+
 
 export default function GameGroupStatus({ user, teamData, createMessage }) {
   const [gameGroups, setGameGroups] = useState([])
@@ -22,7 +23,7 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
 
   useEffect(() => {
     if (selectedGroup && selectedGroup.draft) {
-      axios.get(`http://api.kiakkoterot.fi/api/gamegroup/draft/${selectedGroup.draft._id}`)
+      axios.get(`${APIURL}/api/gamegroup/draft/${selectedGroup.draft._id}`)
         .then(response => {
           setDraft(response.data)
         })
@@ -46,7 +47,7 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
   }
 
   const getGroupData = (groupId) => {
-    axios.get(`http://api.kiakkoterot.fi/api/gameGroup/${groupId}`)
+    axios.get(`${APIURL}/api/gameGroup/${groupId}`)
         .then(response => {
           if (response.data) {
             setSelectedGroup(response.data)
@@ -160,14 +161,19 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
           {draft.status === 'finished' ?
             <GroupStandings />
             :
-            <LiveDraft user={user} draft={draft} teamData={teamData} />
+            <LiveDraft 
+              user={user} 
+              draft={draft} 
+              teamData={teamData} 
+              getGroupData={getGroupData} 
+            />
           }
           {draft.teamsChosen.length > 0 && draft.status !== 'started' ? 
             <DraftedTeams draft={draft} teamData={teamData} />
             : ''
           }
           {draft.status === 'scheduled' ?
-            <PreOrder 
+            <PrePicks 
               user={user} 
               draft={selectedGroup.draft} 
               teamData={teamData} 

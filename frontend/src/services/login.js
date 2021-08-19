@@ -1,9 +1,10 @@
 import axios from 'axios'
-const baseUrl = 'http://api.kiakkoterot.fi/api/login'
+import { APIURL } from '../services/addresses'
+
 
 const login = async credentials => {
   console.log('login')
-  const response = await axios.post(baseUrl, credentials)
+  const response = await axios.post(`${APIURL}/api/login`, credentials)
   return response.data
 }
 

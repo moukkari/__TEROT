@@ -1,6 +1,8 @@
 import axios from 'axios'
 import React from 'react'
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function AcceptInvitation({ user, setUser }) {
   let invitations = ''
@@ -8,7 +10,7 @@ export default function AcceptInvitation({ user, setUser }) {
   const accept = invitation => {
     console.log(invitation)
     const config = { headers: { Authorization: `bearer ${user.token}` } }
-    axios.put(`http://api.kiakkoterot.fi/api/gamegroup/accept/${invitation._id}`, null, config)
+    axios.put(`${APIURL}/api/gamegroup/accept/${invitation._id}`, null, config)
       .then(response => {
         if (response.status === 200) {
           console.log(response.data)

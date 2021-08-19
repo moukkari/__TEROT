@@ -2,19 +2,21 @@ import React, { useEffect, useState } from 'react'
 import loginService from '../services/login'
 import { Button, Row, Col } from 'react-bootstrap'
 import axios from 'axios'
+import { APIURL } from '../services/addresses'
+
 
 export default function Login({ user, setUser, createMessage }) {
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
 
-  console.log('called login', user)
+  console.log('called login')
 
   useEffect(() => {
     const storageUser = JSON.parse(localStorage.getItem('kiakkoTeroUser'))
     // console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
     if (storageUser) {
       const config = { headers: { Authorization: `bearer ${storageUser.token}` } }
-      axios.get('http://api.kiakkoterot.fi/api/login', config)
+      axios.get(`${APIURL}/api/login`, config)
         .then(response => {
           console.log('valid token')
           setUser(storageUser)

@@ -3,13 +3,15 @@ import Team from './team'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import axios from 'axios'
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../../services/addresses'
 
-export default function PreOrder({ user, draft, teamData, createMessage }) {
+
+export default function PrePicks({ user, draft, teamData, createMessage }) {
     const [teamOrder, setTeamOrder] = useState(teamData)
 
     const save = () => {
         const body = { userId: user._id, picks: teamOrder.map(t => t._id) }
-        axios.put(`http://api.kiakkoterot.fi/api/gamegroup/draft/${draft._id}/prePicks`, { body })
+        axios.put(`${APIURL}/api/gamegroup/draft/${draft._id}/prePicks`, { body })
             .then(response => {
                 console.log(response)
             })

@@ -7,6 +7,7 @@ import AcceptInvitation from './components/acceptInvitation'
 import GameGroupHandler from './components/gameGroupHandler'
 import Standings from './components/standings'
 import CreateUser from './components/createUser'
+import { APIURL } from './services/addresses'
 
 const App = () => {
   const [message, setMessage] = useState(null)
@@ -15,7 +16,7 @@ const App = () => {
 
   useEffect(() => {
     console.log('updating season standings')
-    axios.get('http://api.kiakkoterot.fi/api/nhl/')
+    axios.get(`${APIURL}/api/nhl/`)
       .then(res => {
         setTeamData(res.data)
       })
@@ -46,9 +47,15 @@ const App = () => {
       <Container style={{border: '1px solid black'}}> 
         <Row>
           <Col xs={4} md={8}>
-            <h1>Terot</h1>
-            
-            
+            <img 
+              alt='alfonso' 
+              src={`${process.env.PUBLIC_URL}logo192.png`} 
+              style={{
+                float: 'left',
+                filter: 'blur(1px) contrast(5%)'
+              }}
+            />
+            <h1>Kiakkoterot</h1>
           </Col>
           <Col xs={8} md={4}>
               <Login user={user} setUser={setUser} createMessage={createMessage} />

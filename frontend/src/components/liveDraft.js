@@ -4,7 +4,7 @@ import TeamChooser from './teamChooser/teamChooser'
 import Countdown from './countDown'
 import DraftedTeams from './draftedTeams'
 
-export default function LiveDraft({ user, draft, teamData }) {
+export default function LiveDraft({ user, draft, teamData, getGroupData }) {
   const [client, setClient] = useState()
   const [liveDraft, setLiveDraft] = useState(draft)
 
@@ -30,9 +30,11 @@ export default function LiveDraft({ user, draft, teamData }) {
         if (message.data.startsWith('change:')) {
           let newDraft = JSON
             .parse(message.data.replace('change:', ''))
-          console.log(newDraft)
 
           setLiveDraft(newDraft)
+          if (newDraft.status === 'finished') {
+            getGroupData(newDraft.gameGroup)
+          }
         }
       }
     } else {

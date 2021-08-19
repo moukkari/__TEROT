@@ -1,6 +1,8 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function CreateUser({ createMessage }) {
   const [toggle, setToggle] = useState(false)
@@ -14,7 +16,7 @@ export default function CreateUser({ createMessage }) {
         password: newUser.password
       }
 
-      axios.post('http://api.kiakkoterot.fi/api/users', obj)
+      axios.post(`${APIURL}/api/users`, obj)
         .then(res => {
           if (res.status === 201) {
             createMessage(`Käyttäjä ${obj.name} luotiin onnistuneesti`)

@@ -3,6 +3,8 @@ import React, { useState } from 'react'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { Button } from 'react-bootstrap'
+import { APIURL } from '../services/addresses'
+
 
 export default function DraftSettings({ draft, createMessage }) {
   const [oldDate, setOldDate] = useState(new Date(draft.startingTime))
@@ -18,7 +20,7 @@ export default function DraftSettings({ draft, createMessage }) {
       startingTime: date,
       timeForTakingPick: timeForTakingPick
     }
-    axios.put(`http://api.kiakkoterot.fi/api/gamegroup/draft/${draft._id}`, change)
+    axios.put(`${APIURL}/api/gamegroup/draft/${draft._id}`, change)
       .then(response => {
         console.log(response)
         setOldDate(new Date(response.data.startingTime))
