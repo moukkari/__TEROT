@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const loginRouter = require('express').Router()
 const User = require('../models/user')
 const GameGroup = require('../models/gameGroup')
+const logger = require('../utils/logger')
 
 loginRouter.post('/', async (request, response) => {
   const body = request.body
@@ -34,18 +35,15 @@ loginRouter.post('/', async (request, response) => {
   if (user.adminOf) { responseUser.adminOf = user.adminOf }
   if (user.invitations) { 
     const invitations = await GameGroup.find().where('_id').in(user.invitations).populate('admin').exec()
-    // console.log(invitations)
     responseUser.invitations = invitations
   }
   if (user.gameGroups) {
     const groups = await GameGroup.find().where('_id').in(user.gameGroups).populate().exec()
-    // console.log(groups)
     responseUser.gameGroups = groups
   }
 
-  response
-    .status(200)
-    .send(responseUser)
+  logger.info('user logged in:', user.username)
+  response.status(200).send(responseUser)
 })
 
 loginRouter.get('/', (request, response) => {

@@ -1,32 +1,32 @@
 const Draft = require('../models/draft')
 const GameGroup = require('../models/gameGroup')
 const User = require('../models/user')
-const mongoose = require('mongoose')
 const scheduler = require('node-schedule')
+const logger = require('../utils/logger')
+
 
 let clients = []
-let streamsOn = false
 let timers = []
 
 const initialize = () => {
   try {
-    console.log('starting draft collection watch')
+    logger.info('starting draft collection watch')
     const changeStream = Draft.watch()
 
     changeStream.on('change', async (change) => {
       // Force start draft
       if (change.updateDescription && change.updateDescription.updatedFields.status === 'started') {
-        console.log(change.documentKey._id, 'draft started')
-        console.log(change.updateDescription.updatedFields.draftOrder)
+        logger.info(change.documentKey._id, 'draft started')
+        logger.info(change.updateDescription.updatedFields.draftOrder)
         startTimer(change.documentKey._id, change.updateDescription.updatedFields.draftOrder[0])
       }
 
       if (change.updateDescription && change.updateDescription.updatedFields.startingTime) {
-        console.log(`draft ${change.documentKey._id} changed starting time to 
+        logger.info(`draft ${change.documentKey._id} changed starting time to 
           ${change.updateDescription.updatedFields.startingTime}`)
         scheduleDraft(change.documentKey._id, change.updateDescription.updatedFields.startingTime)
       } else {
-        console.log('db changed', change.documentKey._id)
+        logger.info('db changed', change.documentKey._id)
 
         if (clients[change.documentKey._id]) {
           const newDraft = await Draft.findOne({ _id: change.documentKey._id })
@@ -53,22 +53,22 @@ const initialize = () => {
             client.ws.send('change:' + JSON.stringify(newDraft))
           })
         } else {
-          console.log('no clients listening')
+          logger.info('no clients listening')
         } 
       }
     })
   } catch(e) {
-    console.log('fucked up', e)
+    logger.info('fucked up', e)
   }
 }
 
 const scheduleDraft = async (draftId, startingTime) => {
-  console.log(`scheduling Draft ${draftId} to start at ${startingTime}`)
-  let startingDate = new Date() // CHANGE TO startingTime
-  startingDate.setSeconds(startingDate.getSeconds() + 5)
+  logger.info(`scheduling Draft ${draftId} to start at ${startingTime}`)
+  let startingDate = new Date(startingTime) // CHANGE TO startingTime
+  // startingDate.setSeconds(startingDate.getSeconds() + 5) // REMOVE
 
-  const job = scheduler.scheduleJob(startingDate, async () => {
-    console.log('job started')
+  scheduler.scheduleJob(startingDate, async () => {
+    logger.info('job started')
 
     const draft = await Draft.findById(draftId)
     draft.status = 'started'
@@ -83,7 +83,7 @@ const scheduleDraft = async (draftId, startingTime) => {
 
     await draft.save()
 
-    console.log('done scheduling')
+    logger.info('done scheduling')
   })
 }
 
@@ -120,30 +120,30 @@ const checkForClient = (clientId, draftId, webSocketKey, ws) => {
       clients[draftId].push(newUser)
 
     } else {
-      console.log('connection already open with that web socket key')
+      logger.info('connection already open with that web socket key')
     }
 
 
     if (!clients[draftId].find(u => u.user === clientId)) {
-      console.log(`adding ${clientId} to ${draftId}`)
+      logger.info(`adding ${clientId} to ${draftId}`)
       clients[draftId].push({ 
         user: clientId, 
         ws: ws,
         id: webSocketKey
       })
     } else if (clients[draftId].find(u => u.id === webSocketKey)) {
-      console.log('found the user')
+      logger.info('found the user')
     } else {
-      console.log('draft or user not found -> not adding to array')
+      logger.info('draft or user not found -> not adding to array')
     }
-    console.log(clients)
+    logger.info(clients)
   } else {
     clients[draftId] = [{ 
       user: clientId, 
       ws: ws,
       id: webSocketKey
     }]
-    console.log(clients)
+    logger.info(clients)
   }
 }
 
@@ -152,12 +152,12 @@ const broadcast = (msg, draftId, ws) => {
   //send back the message to the other clients
   clients[draftId]
     .forEach(client => {
-      console.log(client.user, client.id)
+      logger.info(client.user, client.id)
       if (client.ws !== ws) {
-        console.log('trying to broadcast')
+        logger.info('trying to broadcast')
         client.ws.send(`Hello, broadcast message -> ${msg}`)
       } else {
-        console.log('not broadcasting to itself')
+        logger.info('not broadcasting to itself')
       }
     })
 }
@@ -168,11 +168,11 @@ const close = (draftId, ws) => {
     if (toFind) {
       clients[draftId] = clients[draftId].filter(client => client !== toFind)
     } else {
-      console.log('client not found')
+      logger.info('client not found')
     }
   }
-  console.log('WebSocket was closed')
-  console.log(clients)
+  logger.info('WebSocket was closed')
+  logger.info(clients)
 }
 
 const startTimer = async (draftId, playerInTurn, timeForTakingPick) => {
@@ -180,14 +180,14 @@ const startTimer = async (draftId, playerInTurn, timeForTakingPick) => {
     let d = await Draft.findOne({ _id: draftId })
     timeForTakingPick = d.timeForTakingPick
   }
-  console.log('startTimer called', draftId, playerInTurn)
+  logger.info('startTimer called', draftId, playerInTurn)
   timers[draftId] = setTimeout(() => {
     pickATeam(draftId, null, playerInTurn)
   }, (timeForTakingPick * 1000))
 }
 
 const pickATeam = async (draftId, teamId, playerInTurn) => {
-  console.log('pickATeam', draftId, teamId, playerInTurn)
+  logger.info('pickATeam', draftId, teamId, playerInTurn)
   let draft = await Draft.findOne({ _id: draftId })
   let user = await User.findOne({ _id: playerInTurn })
 
@@ -206,10 +206,10 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
   }
 
   if (!teamId) {
-    console.log('teams left: ', draft.teamsLeft.length)
+    logger.info('teams left: ', draft.teamsLeft.length)
     teamId = draft.teamsLeft[Math.floor(Math.random() * draft.teamsLeft.length)]
   } else {
-    console.log('closing timer for', playerInTurn)
+    logger.info('closing timer for', playerInTurn)
     clearTimeout(timers[draftId])
   }
 
@@ -239,7 +239,7 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
 
     await draft.save()
   } else {
-    console.log('draft or user not found')
+    logger.info('draft or user not found')
   }
 }
 

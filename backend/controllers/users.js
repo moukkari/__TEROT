@@ -1,12 +1,11 @@
 const bcrypt = require('bcrypt')
 const usersRouter = require('express').Router()
 const User = require('../models/user')
+const logger = require('../utils/logger')
 
 usersRouter.post('/', async (request, response) => {
   try {
     const body = request.body
-
-    console.log(body)
 
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(body.password, saltRounds)
@@ -14,14 +13,14 @@ usersRouter.post('/', async (request, response) => {
     const user = new User({
       username: body.username.toLowerCase(),
       name: body.name,
-      passwordHash,
+      passwordHash
     })
 
     const savedUser = await user.save()
 
     response.status(201).json(savedUser)
   } catch(e) {
-    console.log(e)
+    logger.error(e)
     response.status(400).send(e)
   }
   
@@ -35,11 +34,8 @@ usersRouter.get('/', async (request, response) => {
 
 usersRouter.post('/invite', async (request, response) => {
   const body = request.body
-  console.log(body)
 
   const user = await User.findOne({ _id: body._id })
-
-  console.log(user.id)
   
   if (user) {
     user.invitations.push(body.invite)
@@ -49,7 +45,18 @@ usersRouter.post('/invite', async (request, response) => {
     response.status(400).json('user not found')
   }
 
-  
+})
+
+usersRouter.get('/invitations/:id', async (request, response) => {
+  const id = request.params.id
+  const user = await User.find({ _id: id })
+    .populate('invitations')
+    
+  if (user.invitations) {
+    response.status(200).json(user.invitations)
+  } else {
+    response.status(404).send()
+  }
 })
 
 module.exports = usersRouter

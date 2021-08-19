@@ -3,19 +3,19 @@ import { Table } from 'react-bootstrap'
 
 
 export default function DraftedTeams({ draft, teamData }) {
-    return (
-      <div>
-        <h4>Valitut tiimit</h4>
-        <Table striped bordered>
-          <thead>
-            <tr>
-              <th></th>
-              <th></th>
-              <th>Joukkue</th>
-              <th>Pelaaja</th>
-            </tr>
-          </thead>
-          <tbody>
+  return (
+    <div>
+      <h4>Valitut tiimit</h4>
+      <Table striped bordered>
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>Joukkue</th>
+            <th>Pelaaja</th>
+          </tr>
+        </thead>
+        <tbody>
           {draft.teamsChosen.map((element, i) => {
             const data = teamData.find(t => t.Key === element.team.Key)
             return (
@@ -34,25 +34,25 @@ export default function DraftedTeams({ draft, teamData }) {
                 </td>
               </tr>
             )})}
-            </tbody>
-        </Table>
+        </tbody>
+      </Table>
 
 
-        {draft.teamsLeft.length > 0 ?
-          <div>
-            <h4>Valitsematta jääneet tiimit</h4>
-            <ul>
-              {draft.teamsLeft.map(element => {
-                const data = teamData.find(t => t._id === element._id)
-                return (<li key={element.Key}>
-                  <img src={data.WikipediaLogoUrl} alt='' width='10px' />
+      {draft.teamsLeft.length > 0 ?
+        <div>
+          <h4>Valitsematta jääneet tiimit</h4>
+          <ul>
+            {draft.teamsLeft.map(element => {
+              const data = teamData.find(t => t._id === element._id)
+              return (<li key={element.Key}>
+                <img src={data.WikipediaLogoUrl} alt='' width='10px' />
                   &nbsp;{element.City} {element.Name}
-                </li>
+              </li>
               )})}
-            </ul>
-          </div>
-          : ''
-        }
-      </div>
-    )
+          </ul>
+        </div>
+        : ''
+      }
+    </div>
+  )
 }

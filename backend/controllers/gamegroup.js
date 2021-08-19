@@ -4,6 +4,8 @@ const User = require('../models/user')
 const Draft = require('../models/draft')
 const Team = require('../models/nhl/team')
 const jwt = require('jsonwebtoken')
+const logger = require('../utils/logger')
+
 
 const getTokenFrom = request => {
   const authorization = request.get('authorization')
@@ -43,20 +45,20 @@ gameGroupRouter.post('/create', async (request, response) => {
   })
 
   await newDraft.save()
-  console.log('draft created')
+  logger.info('draft created')
 
   gameGroup.draft = newDraft
   
   const savedGameGroup = await gameGroup.save()
-  console.log('group created')
+  logger.info('group created')
   user.adminOf = savedGameGroup._id
   user.gameGroups.push(savedGameGroup)
 
   const savedUser = await user.save()
-  console.log('user saved')
+  logger.info('user saved')
 
   response.json(savedUser)
-  console.log('creating group went ok')
+  logger.info('creating group went ok')
 })
 
 gameGroupRouter.delete('/:id', async (request, response) => {
@@ -68,7 +70,7 @@ gameGroupRouter.delete('/:id', async (request, response) => {
 
   const id = request.params.id
   const gameGroup = await GameGroup.findOne({ admin: decodedToken.id })
-  console.log('deleting group: ' + id)
+  logger.info('deleting group: ' + id)
 
 
   if (gameGroup) {
@@ -82,7 +84,7 @@ gameGroupRouter.delete('/:id', async (request, response) => {
     players.forEach(async player => {
       player.gameGroups.pull(gameGroup._id)
       await player.save()
-      console.log('removed gamegroup from', player)
+      logger.info('removed gamegroup from', player)
     })
 
     players = await User.find({ invitations: gameGroup._id })
@@ -90,7 +92,7 @@ gameGroupRouter.delete('/:id', async (request, response) => {
     players.forEach(async player => {
       player.invitations.pull(gameGroup._id)
       await player.save()
-      console.log('removed invitation for', player)
+      logger.info('removed invitation for', player)
     })
 
     const draft = await Draft.findOne({ gameGroup: gameGroup._id })
@@ -123,7 +125,7 @@ gameGroupRouter.put('/accept/:id', async (request, response) => {
 
   const id = request.params.id
 
-  console.log(id, request.body)
+  logger.info(id, request.body)
 
   const gameGroup = await GameGroup.findOne({ _id: id })
   const user = await User.findOne({ _id: decodedToken.id })
@@ -135,7 +137,7 @@ gameGroupRouter.put('/accept/:id', async (request, response) => {
     user.gameGroups.push(gameGroup._id)
     user.invitations.pull(gameGroup._id)
     const savedUser = await user.save().then(user => user.populate('gameGroups').execPopulate())
-    console.log(savedUser)
+    logger.info(savedUser)
     response.status(200).json(savedUser)
   } else {
     response.status(400).json({ error: 'user or gamegroup not found' })
@@ -174,7 +176,7 @@ gameGroupRouter.put('/draft/:id', async (request, response) => {
   try {
     const id = request.params.id
     const body = request.body
-    console.log(id, body)
+    logger.info(id, body)
 
     const draft = await Draft.findOne({ _id: id })
 
@@ -198,19 +200,19 @@ gameGroupRouter.put('/draft/:id/prePicks', async (request, response) => {
   try {
     const id = request.params.id
     const body = request.body.body
-    // console.log(id, body)
+    // logger.info(id, body)
 
     const draft = await Draft.findOne({ _id: id })
 
     if (draft) {
       draft.prePicks = await draft.prePicks.filter(p => {
-        console.log(p.user, body.userId, p.user.toString() === body.userId)
+        logger.info(p.user, body.userId, p.user.toString() === body.userId)
         return p.user.toString() !== body.userId
       })
 
       await draft.prePicks.push({ user: body.userId, picks: body.picks })
 
-      console.log(`added prepicks for ${body.userId}`)
+      logger.info(`added prepicks for ${body.userId}`)
 
       await draft.save()
       response.send('ok')
@@ -218,7 +220,7 @@ gameGroupRouter.put('/draft/:id/prePicks', async (request, response) => {
       response.send('draft not found')
     }
   } catch {
-    console.log('error')
+    logger.info('error')
   }
 })
 

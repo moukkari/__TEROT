@@ -8,7 +8,7 @@ export default function InviteUser({ user, gameGroupData }) {
   const [users, setUsers] = useState([{}])
 
   useEffect(() => {
-    axios.get(`${APIURL}/api/users`)
+    axios.get(`${APIURL}/users`)
       .then(response => {
         // removes the logged in user from the users list
         let filteredUsers = response.data.filter(u => u.username !== user.username)
@@ -19,7 +19,7 @@ export default function InviteUser({ user, gameGroupData }) {
 
   const invite = otherUser => {
     let request = { ...otherUser, invite: user.adminOf }
-    axios.post(`${APIURL}/api/users/invite`, request)
+    axios.post(`${APIURL}/users/invite`, request)
       .then(response => {
         console.log(response)
         if (response.status === 200) {
@@ -55,9 +55,9 @@ export default function InviteUser({ user, gameGroupData }) {
         <tbody>
           {usersList}
         </tbody>
-        
+
       </Table>
-      
+
     </div>
   )
 }

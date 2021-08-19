@@ -3,8 +3,8 @@ const express = require('express')
 const mongoose = require('mongoose')
 require('express-async-errors')
 const app = express()
-// require('express-async-errors')
 const cors = require('cors')
+// eslint-disable-next-line no-unused-vars
 const expressWs = require('express-ws')(app)
 
 const middleware = require('./utils/middleware')
@@ -15,6 +15,9 @@ const nhlService = require('./services/nhl')
 const draftService = require('./services/draft-service')
 const gameGroupRouter = require('./controllers/gamegroup')
 const draftRouter = require('./controllers/draft')
+const logger = require('./utils/logger')
+
+logger.error('testing')
 
 const mongoOptions = { 
   useNewUrlParser: true, 
@@ -25,13 +28,13 @@ const mongoOptions = {
 
 mongoose.connect(config.MONGODB_URI, mongoOptions)
   .then(() => {
-    console.log('connected to MongoDB')
+    logger.info('connected to MongoDB')
   })
   .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
+    logger.error('error connecting to MongoDB:', error.message)
   })
 
-//nhlService.initialize()
+nhlService.initialize()
 draftService.initialize()
 
 // app.use(express.static('build'))

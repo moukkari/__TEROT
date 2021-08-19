@@ -14,19 +14,16 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [teamData, setTeamData] = useState([])
 
-  useEffect(() => {
-    console.log('updating season standings')
-    axios.get(`${APIURL}/api/nhl/`)
-      .then(res => {
-        setTeamData(res.data)
-      })
-      .catch(e => console.log(e)) 
+  useEffect(async () => {
+    axios.get(`${APIURL}/nhl/`)
+      .then(res => setTeamData(res.data))
+      .catch(e => console.log(e))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  
+
   const createMessage = (msg, error = false) => {
-    let style = { 
-      position: 'absolute', 
+    let style = {
+      position: 'absolute',
       top: 0,
       borderBottom: '1px solid black',
       padding: '1em',
@@ -44,12 +41,12 @@ const App = () => {
   return (
     <div>
       {message}
-      <Container style={{border: '1px solid black'}}> 
+      <Container style={{ border: '1px solid black' }}>
         <Row>
           <Col xs={4} md={8}>
-            <img 
-              alt='alfonso' 
-              src={`${process.env.PUBLIC_URL}logo192.png`} 
+            <img
+              alt='alfonso'
+              src={`${process.env.PUBLIC_URL}logo192.png`}
               style={{
                 float: 'left',
                 filter: 'blur(1px) contrast(5%)'
@@ -58,27 +55,33 @@ const App = () => {
             <h1>Kiakkoterot</h1>
           </Col>
           <Col xs={8} md={4}>
-              <Login user={user} setUser={setUser} createMessage={createMessage} />
-              {user ? <AcceptInvitation user={user} setUser={setUser} /> : '' }
+            <Login user={user} setUser={setUser} createMessage={createMessage} />
+            {user ?
+              <AcceptInvitation
+                user={user}
+                setUser={setUser}
+                createMessage={createMessage}
+              />
+              : '' }
           </Col>
         </Row>
         <Row>
           <Col xs={12} md={8} style={{ marginBottom: '3em' }}>
-            
+
             {user ?
-              <GameGroupHandler 
-                user={user} 
-                setUser={setUser} 
-                createMessage={createMessage} 
+              <GameGroupHandler
+                user={user}
+                setUser={setUser}
+                createMessage={createMessage}
                 teamData={teamData}
               />
-              : 
+              :
               <CreateUser createMessage={createMessage} />
             }
-              
-          </Col> 
+
+          </Col>
           <Col xs={12} md={4}>
-              <Standings teamData={teamData} />
+            <Standings teamData={teamData} />
           </Col>
         </Row>
         <Row>
@@ -86,7 +89,7 @@ const App = () => {
             &copy; <a href='mailto:tyrkkoilmari@gmail.com'>Ilmari Tyrkkö</a> 2021
           </Col>
         </Row>
-        
+
       </Container>
     </div>
   )

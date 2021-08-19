@@ -20,7 +20,7 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
 
     const config = { headers: { Authorization: `bearer ${user.token}` } }
 
-    axios.post(`${APIURL}/api/gamegroup/create`, request, config)
+    axios.post(`${APIURL}/gamegroup/create`, request, config)
       .then((res) => {
         console.log(res)
         if (res.data.error) {
@@ -33,8 +33,8 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
           localStorage.setItem('kiakkoTeroUser', JSON.stringify(newUser))
         }
       })
-      .catch(e => { 
-        console.log(e) 
+      .catch(e => {
+        console.log(e)
         createMessage('Odottamaton virhe', true)
       })
   }
@@ -43,9 +43,9 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
     <div>
       <h4>Luo kimppa</h4>
         Kimpan nimi:
-        <input value={groupName} onChange={({ target }) => setGroupName(target.value)} />
+      <input value={groupName} onChange={({ target }) => setGroupName(target.value)} />
         &nbsp;
-        <Button onClick={() => createGroup()} variant='success'>Luo kimppa</Button>
+      <Button onClick={() => createGroup()} variant='success'>Luo kimppa</Button>
     </div>
   )
 }

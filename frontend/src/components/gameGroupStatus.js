@@ -6,9 +6,10 @@ import { Table } from 'react-bootstrap'
 import DraftedTeams from './draftedTeams'
 import { Link } from 'react-router-dom'
 import { APIURL } from '../services/addresses'
+import Matches from './matches'
 
 
-export default function GameGroupStatus({ user, teamData, createMessage }) {
+export default function GameGroupStatus({ user, teamData, createMessage, matchData }) {
   const [gameGroups, setGameGroups] = useState([])
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedOption, setSelectedOption] = useState('testi')
@@ -23,7 +24,7 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
 
   useEffect(() => {
     if (selectedGroup && selectedGroup.draft) {
-      axios.get(`${APIURL}/api/gamegroup/draft/${selectedGroup.draft._id}`)
+      axios.get(`${APIURL}/gamegroup/draft/${selectedGroup.draft._id}`)
         .then(response => {
           setDraft(response.data)
         })
@@ -41,19 +42,19 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
       console.log(group)
       setSelectedOption(value)
       getGroupData(group._id)
-    } else { 
+    } else {
       console.log('group not found')
     }
   }
 
   const getGroupData = (groupId) => {
-    axios.get(`${APIURL}/api/gameGroup/${groupId}`)
-        .then(response => {
-          if (response.data) {
-            setSelectedGroup(response.data)
-          }
-        })
-        .catch(e => console.log(e))
+    axios.get(`${APIURL}/gameGroup/${groupId}`)
+      .then(response => {
+        if (response.data) {
+          setSelectedGroup(response.data)
+        }
+      })
+      .catch(e => console.log(e))
   }
 
   const GroupStandings = () => {
@@ -64,7 +65,7 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
         .filter(t => player._id === t.user)
         .map(t => t.team)
         .map(t => teamData.find(data => data._id === t))
-      
+
       let points = 0
       teams.forEach(t => points += t.Wins)
 
@@ -96,7 +97,7 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
                   <img key={t.Key} alt={t.Key} src={t.WikipediaLogoUrl} style={logo} />)
                 )}</td>
               </tr>
-          )})}
+            )})}
         </tbody>
       </Table>
     )
@@ -107,10 +108,9 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
     if (admin) return admin.name
     else return 'undefined'
   }
-  
+
 
   const GroupInfo = () => {
-    console.log(selectedGroup)
     return (
       <div style={{ marginBottom: '3em' }}>
         <button onClick={() => console.log(selectedGroup)}>selectedGroup</button>
@@ -134,17 +134,17 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
               <td>{new Date(selectedGroup.draft.startingTime).toLocaleString('fi-FI')}</td>
             </tr>
           </tbody>
-          
+
         </table>
       </div>
     )
   }
-      
+
 
   return (
     <div>
       <h2>Kimpat</h2>
-      
+
       {user && user.gameGroups.length > 0 && draft ?
         <div>
           Valitse kimppa:&nbsp;
@@ -159,30 +159,33 @@ export default function GameGroupStatus({ user, teamData, createMessage }) {
           }
 
           {draft.status === 'finished' ?
-            <GroupStandings />
+            <div>
+              <GroupStandings />
+              <Matches teamData={teamData} matchData={matchData} draft={draft} />
+            </div>
             :
-            <LiveDraft 
-              user={user} 
-              draft={draft} 
-              teamData={teamData} 
-              getGroupData={getGroupData} 
+            <LiveDraft
+              user={user}
+              draft={draft}
+              teamData={teamData}
+              getGroupData={getGroupData}
             />
           }
-          {draft.teamsChosen.length > 0 && draft.status !== 'started' ? 
+          {draft.teamsChosen.length > 0 && draft.status !== 'started' ?
             <DraftedTeams draft={draft} teamData={teamData} />
             : ''
           }
           {draft.status === 'scheduled' ?
-            <PrePicks 
-              user={user} 
-              draft={selectedGroup.draft} 
-              teamData={teamData} 
+            <PrePicks
+              user={user}
+              draft={selectedGroup.draft}
+              teamData={teamData}
               createMessage={createMessage}
             />
-            : 
+            :
             ''
           }
-          
+
         </div>
         :
         <div>

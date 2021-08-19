@@ -6,8 +6,8 @@ import { APIURL } from '../services/addresses'
 
 
 export default function Login({ user, setUser, createMessage }) {
-  const [username, setUsername] = useState('') 
-  const [password, setPassword] = useState('') 
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   console.log('called login')
 
@@ -16,8 +16,8 @@ export default function Login({ user, setUser, createMessage }) {
     // console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
     if (storageUser) {
       const config = { headers: { Authorization: `bearer ${storageUser.token}` } }
-      axios.get(`${APIURL}/api/login`, config)
-        .then(response => {
+      axios.get(`${APIURL}/login`, config)
+        .then(() => {
           console.log('valid token')
           setUser(storageUser)
         })
@@ -58,7 +58,7 @@ export default function Login({ user, setUser, createMessage }) {
           <h3>Kirjautuminen</h3>
           <form onSubmit={handleLogin}>
             <div>
-                <input
+              <input
                 type="text"
                 value={username}
                 name="Username"
@@ -67,7 +67,7 @@ export default function Login({ user, setUser, createMessage }) {
               />
             </div>
             <div>
-                <input
+              <input
                 type="password"
                 value={password}
                 name="Password"
@@ -75,14 +75,14 @@ export default function Login({ user, setUser, createMessage }) {
                 onChange={({ target }) => setPassword(target.value)}
               />
             </div>
-            <Button 
-              type="submit" 
-              size='sm' 
+            <Button
+              type="submit"
+              size='sm'
               variant='success'
               style={{ marginTop: '4px' }}
             >Kirjaudu sisään</Button>
           </form>
-          
+
         </div>
         :
         <Row>
@@ -90,8 +90,8 @@ export default function Login({ user, setUser, createMessage }) {
             <p onClick={() => console.log(user)}>{user.username}</p>
           </Col>
           <Col xs={9} md={8}>
-            <Button 
-              onClick={() => logOut()} 
+            <Button
+              onClick={() => logOut()}
               style={{ float: 'right', marginTop: '5px' }}
               variant='secondary'
               size='sm'
@@ -100,8 +100,8 @@ export default function Login({ user, setUser, createMessage }) {
             </Button>
           </Col>
         </Row>
-        }
-      </div>
+      }
+    </div>
   )
-  
+
 }

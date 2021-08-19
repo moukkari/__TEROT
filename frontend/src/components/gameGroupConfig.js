@@ -13,7 +13,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
 
   useEffect(() => {
     if (user.adminOf) {
-      axios.get(`${APIURL}/api/gamegroup/${user.adminOf}`)
+      axios.get(`${APIURL}/gamegroup/${user.adminOf}`)
         .then(response => {
           // console.log(res)
           setGameGroupData(response.data)
@@ -22,7 +22,7 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
           console.log(e)
         })
     }
-    
+
 
   }, [user])
 
@@ -30,13 +30,16 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
     console.log(user.token)
     const config = { headers: { Authorization: `bearer ${user.token}` } }
     if (window.confirm('Haluatko todella poistaa kimpan?')) {
-      axios.delete(`${APIURL}/api/gamegroup/${gameGroupData._id}`, config)
+      axios.delete(`${APIURL}/gamegroup/${gameGroupData._id}`, config)
         .then(response => {
           console.log(response)
           createMessage('Kimppa poistettu onnistuneesti')
           setGameGroupData(null)
         })
-        .catch(e => createMessage('Virhe kimppaa poistettaessa', true))
+        .catch(e => {
+          console.log(e)
+          createMessage('Virhe kimppaa poistettaessa', true)
+        })
     }
   }
 
@@ -46,8 +49,8 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
       <h3>Draft-asetukset</h3>
       {gameGroupData && gameGroupData.draft ?
         <div>
-          <Button 
-            variant='danger' 
+          <Button
+            variant='danger'
             onClick={() => removeGameGroup()}
             style={{ float: 'right' }}
           >
@@ -56,10 +59,10 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
 
           <DraftSettings draft={gameGroupData.draft} createMessage={createMessage} />
           <InviteUser user={user} gameGroupData={gameGroupData} />
-          
+
         </div>
         :
-        <CreateGameGroup user={user} createMessage={createMessage} setUser={setUser} /> 
+        <CreateGameGroup user={user} createMessage={createMessage} setUser={setUser} />
       }
     </div>
   )
