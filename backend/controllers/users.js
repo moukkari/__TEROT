@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const usersRouter = require('express').Router()
 const User = require('../models/user')
 const logger = require('../utils/logger')
+const jwt = require('jsonwebtoken')
 
 usersRouter.post('/', async (request, response) => {
   try {
@@ -47,9 +48,12 @@ usersRouter.post('/invite', async (request, response) => {
 
 })
 
-usersRouter.get('/invitations/:id', async (request, response) => {
-  const id = request.params.id
-  const user = await User.find({ _id: id })
+usersRouter.get('/invitations/', async (request, response) => {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+  const user = await User.findOne({ _id: decodedToken.id })
     .populate('invitations')
     
   if (user.invitations) {

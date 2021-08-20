@@ -7,10 +7,10 @@ import { APIURL } from '../services/addresses'
 export default function AcceptInvitation({ user, setUser, createMessage }) {
   const [invitations, setInvitations] = useState([])
   const [invitationList, setInvitationList] = useState('')
+  const config = { headers: { Authorization: `bearer ${user.token}` } }
 
   const accept = invitation => {
     console.log(invitation)
-    const config = { headers: { Authorization: `bearer ${user.token}` } }
     axios.put(`${APIURL}/gamegroup/accept/${invitation._id}`, null, config)
       .then(response => {
         if (response.status === 200) {
@@ -41,7 +41,7 @@ export default function AcceptInvitation({ user, setUser, createMessage }) {
 
 
   const update = () => {
-    axios.get(`${APIURL}/users/invitations/${user._id}`)
+    axios.get(`${APIURL}/users/invitations`, config)
       .then(response => {
         setInvitations(response.data)
         let msg = 'Kutsut päivitetty'

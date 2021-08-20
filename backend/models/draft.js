@@ -34,9 +34,16 @@ const draftSchema = mongoose.Schema({
       ref: 'User'
     }
   ],
+  fullDraftOrder: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  ],
   round: { type: Number, default: 1 },
   totalRounds: Number,
   pick: { type: Number, default: 1 },
+  totalPick: { type: Number, default: 1 },
   picksPerRound: Number,
   prePicks: [
     {

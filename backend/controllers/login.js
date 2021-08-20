@@ -47,14 +47,8 @@ loginRouter.post('/', async (request, response) => {
 })
 
 loginRouter.get('/', (request, response) => {
-  let authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    authorization = authorization.substring(7)
-  } else {
-    authorization = null
-  }
-  const decodedToken = jwt.verify(authorization, process.env.SECRET)
-  if (!authorization || !decodedToken.id) {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   } else {
     return response.status(200).send()

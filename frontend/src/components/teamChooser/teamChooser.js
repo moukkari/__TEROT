@@ -1,17 +1,23 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './teamGrid.css'
 import TeamComponent from './teamComponent'
 import { Row, Col } from 'react-bootstrap'
 
 const Timer = ({ time }) => {
   const [timer, setTimer] = useState(time)
-  setTimeout(() => {
+
+  useEffect(() => {
+    return () => clearTimeout(timerVar)
+  }, [])
+
+  const timerVar = setTimeout(() => {
     if (timer > 0) {
       setTimer(timer - 1)
     } else {
-      setTimer(timer)
+      setTimer(time)
     }
   }, 1000)
+  timerVar
 
   return timer
 }

@@ -2,20 +2,21 @@ import React, { useEffect, useState } from 'react'
 import LiveDraft from './liveDraft'
 import PrePicks from './prePicks/prePicks'
 import axios from 'axios'
-import { Table } from 'react-bootstrap'
 import DraftedTeams from './draftedTeams'
 import { Link } from 'react-router-dom'
 import { APIURL } from '../services/addresses'
 import Matches from './matches'
+import GroupStandings from './groupStandings'
 
 
 export default function GameGroupStatus({ user, teamData, createMessage, matchData }) {
   const [gameGroups, setGameGroups] = useState([])
   const [selectedGroup, setSelectedGroup] = useState(null)
-  const [selectedOption, setSelectedOption] = useState('testi')
+  const [selectedOption, setSelectedOption] = useState('undefined')
   const [draft, setDraft] = useState(null)
 
   useEffect(() => {
+    console.log('called this', user.gameGroups)
     if (user && user.gameGroups.length > 0) {
       setGameGroups(user.gameGroups.map(g => <option key={`g${g._id}`} value={g._id}>{g.name}</option>))
       getGroupData(user.gameGroups[0]._id)
@@ -48,59 +49,14 @@ export default function GameGroupStatus({ user, teamData, createMessage, matchDa
   }
 
   const getGroupData = (groupId) => {
+    console.log(groupId)
     axios.get(`${APIURL}/gameGroup/${groupId}`)
       .then(response => {
         if (response.data) {
           setSelectedGroup(response.data)
         }
       })
-      .catch(e => console.log(e))
-  }
-
-  const GroupStandings = () => {
-    let groupStandings = []
-
-    selectedGroup.players.forEach(player => {
-      let teams = selectedGroup.draft.teamsChosen
-        .filter(t => player._id === t.user)
-        .map(t => t.team)
-        .map(t => teamData.find(data => data._id === t))
-
-      let points = 0
-      teams.forEach(t => points += t.Wins)
-
-      groupStandings.push({ user: player.name, teams: teams, points: points })
-    })
-    groupStandings.sort((a, b) => b.points - a.points)
-
-    const width = 100 / groupStandings[0].teams.length
-    const logo = {
-      width: `${width}%`
-    }
-
-    return (
-      <Table striped bordered>
-        <thead>
-          <tr>
-            <th>nimi</th>
-            <th>pisteet</th>
-            <th>joukkueet</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groupStandings.map((standing, i) => {
-            return (
-              <tr key={i}>
-                <td>{standing.user}</td>
-                <td>{standing.points}</td>
-                <td>{standing.teams.map(t => (
-                  <img key={t.Key} alt={t.Key} src={t.WikipediaLogoUrl} style={logo} />)
-                )}</td>
-              </tr>
-            )})}
-        </tbody>
-      </Table>
-    )
+      .catch(e => console.log('error', groupId, e))
   }
 
   const Admin = () => {
@@ -140,12 +96,12 @@ export default function GameGroupStatus({ user, teamData, createMessage, matchDa
     )
   }
 
-
+  console.log(selectedGroup, draft)
   return (
     <div>
       <h2>Kimpat</h2>
 
-      {user && user.gameGroups.length > 0 && draft ?
+      {selectedGroup && draft ?
         <div>
           Valitse kimppa:&nbsp;
           <select value={selectedOption} onChange={({ target }) => changeGameGroup(target.value)}>
@@ -160,7 +116,7 @@ export default function GameGroupStatus({ user, teamData, createMessage, matchDa
 
           {draft.status === 'finished' ?
             <div>
-              <GroupStandings />
+              <GroupStandings gameGroup={selectedGroup} teamData={teamData} />
               <Matches teamData={teamData} matchData={matchData} draft={draft} />
             </div>
             :

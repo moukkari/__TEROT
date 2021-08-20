@@ -7,6 +7,7 @@ const logger = require('../utils/logger')
 
 let clients = []
 let timers = []
+let schedule = []
 
 const initialize = () => {
   try {
@@ -14,23 +15,31 @@ const initialize = () => {
     const changeStream = Draft.watch()
 
     changeStream.on('change', async (change) => {
-      // Force start draft
-      if (change.updateDescription && change.updateDescription.updatedFields.status === 'started') {
-        logger.info(change.documentKey._id, 'draft started')
-        logger.info(change.updateDescription.updatedFields.draftOrder)
-        startTimer(change.documentKey._id, change.updateDescription.updatedFields.draftOrder[0])
+      let updatedFields
+      if (change.updateDescription) {
+        updatedFields = change.updateDescription.updatedFields
+      }
+      
+      const draftId = change.documentKey._id
+
+      // Force draft start
+      if (change.updateDescription && updatedFields.status === 'started') {
+        logger.info(draftId, 'draft started')
+        logger.info(updatedFields.draftOrder)
+        startTimer(draftId, updatedFields.draftOrder[0])
       }
 
-      if (change.updateDescription && change.updateDescription.updatedFields.startingTime) {
-        logger.info(`draft ${change.documentKey._id} changed starting time to 
-          ${change.updateDescription.updatedFields.startingTime}`)
-        scheduleDraft(change.documentKey._id, change.updateDescription.updatedFields.startingTime)
+      if (change.updateDescription && updatedFields.startingTime) {
+        logger.info(`draft ${draftId} changed starting time to 
+          ${updatedFields.startingTime}`)
+        scheduleDraft(draftId, updatedFields.startingTime)
       } else {
-        logger.info('db changed', change.documentKey._id)
+        logger.info('db changed', draftId)
 
-        if (clients[change.documentKey._id]) {
-          const newDraft = await Draft.findOne({ _id: change.documentKey._id })
+        if (clients[draftId]) {
+          const newDraft = await Draft.findOne({ _id: draftId })
             .populate('draftOrder', { name: 1, username: 1 })
+            .populate('fullDraftOrder', { name: 1, username: 1 })
             .populate('teamsLeft', { City: 1, Name: 1, Key: 1 })
             .populate({
               path: 'teamsChosen', 
@@ -47,9 +56,7 @@ const initialize = () => {
               }
             })
 
-          
-
-          clients[change.documentKey._id].forEach(client => {
+          clients[draftId].forEach(client => {
             client.ws.send('change:' + JSON.stringify(newDraft))
           })
         } else {
@@ -65,9 +72,10 @@ const initialize = () => {
 const scheduleDraft = async (draftId, startingTime) => {
   logger.info(`scheduling Draft ${draftId} to start at ${startingTime}`)
   let startingDate = new Date(startingTime) // CHANGE TO startingTime
-  // startingDate.setSeconds(startingDate.getSeconds() + 5) // REMOVE
+  //startingDate.setSeconds(startingDate.getSeconds() + 5) // REMOVE
+  logger.info(new Date().toLocaleString(), new Date(startingTime).toLocaleString())
 
-  scheduler.scheduleJob(startingDate, async () => {
+  schedule[draftId] = scheduler.scheduleJob(startingDate, async () => {
     logger.info('job started')
 
     const draft = await Draft.findById(draftId)
@@ -81,9 +89,21 @@ const scheduleDraft = async (draftId, startingTime) => {
 
     draft.picksPerRound = Math.floor(draft.teamsLeft.length / draft.totalRounds)
 
+    let reverseOrder = [...draft.draftOrder].reverse()
+    let arr = []
+    for (let x = 0; x < draft.totalRounds; x++) {
+      if (x % 2 !== 0) {
+        arr = [...arr, ...reverseOrder]
+      } else {
+        arr = [...arr, ...draft.draftOrder]
+      }
+    }
+    draft.fullDraftOrder = arr
+
     await draft.save()
 
     logger.info('done scheduling')
+    delete schedule[draftId]
   })
 }
 
@@ -187,6 +207,13 @@ const startTimer = async (draftId, playerInTurn, timeForTakingPick) => {
 }
 
 const pickATeam = async (draftId, teamId, playerInTurn) => {
+  try {
+    logger.info('closing timer for', playerInTurn)
+    clearTimeout(timers[draftId])
+  } catch {
+    logger.error('no timer found')
+  }
+
   logger.info('pickATeam', draftId, teamId, playerInTurn)
   let draft = await Draft.findOne({ _id: draftId })
   let user = await User.findOne({ _id: playerInTurn })
@@ -208,12 +235,13 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
   if (!teamId) {
     logger.info('teams left: ', draft.teamsLeft.length)
     teamId = draft.teamsLeft[Math.floor(Math.random() * draft.teamsLeft.length)]
-  } else {
-    logger.info('closing timer for', playerInTurn)
-    clearTimeout(timers[draftId])
   }
 
-  if (draft && user) {
+  // check that it's actually player's turn
+  const match = draft.draftOrder[0]._id.toString() === user._id.toString()
+  console.log(match)
+
+  if (draft && user && match) {
     await draft.teamsLeft.pull(teamId)
 
     await draft.teamsChosen.push({ team: teamId, user: user })
@@ -222,6 +250,7 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
     newArray.push(newArray.shift())
 
     draft.pick++
+    draft.totalPick++
 
     if (draft.pick > draft.picksPerRound) {
       draft.round++
@@ -239,10 +268,19 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
 
     await draft.save()
   } else {
-    logger.info('draft or user not found')
+    logger.error('draft or user not found')
+    if (draft.draftOrder[0]._id !== user._id) {
+      logger.error('player not in turn', draft.draftOrder[0]._id, user._id)
+    }
   }
 }
 
-const draftService = { initialize, checkForClient, broadcast, close, pickATeam }
+const draftService = { 
+  initialize, 
+  checkForClient, 
+  broadcast, 
+  close, 
+  pickATeam 
+}
 
 module.exports = draftService

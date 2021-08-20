@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 export default function Countdown({ liveDraft }) {
   const [dateNow, setDateNow] = useState(new Date().getTime())
+
+  useEffect(() => {
+    return () => clearTimeout(timerVar)
+  }, [])
 
   const draftTime = new Date(liveDraft.startingTime).getTime()
   const countTime = new Date(draftTime - dateNow)
@@ -14,11 +18,12 @@ export default function Countdown({ liveDraft }) {
   timer += `${countTime.getMinutes()} minuuttia, `
   timer += `${countTime.getSeconds()} sekuntia`
 
-  setTimeout(() => {
+  const timerVar = setTimeout(() => {
     if (countTime > 0) {
       setDateNow(new Date().getTime())
     }
   }, 1000)
+  timerVar
 
   return <p>Aikaa draftin alkuun {timer}</p>
 }

@@ -10,12 +10,14 @@ export default function LiveDraft({ user, draft, teamData, getGroupData }) {
   const [liveDraft, setLiveDraft] = useState(draft)
   let keepAlive = null
 
-  console.log('render')
-
+  // "OnComponentWillUnMount"
   useEffect(() => {
-    return (
+    return () => {
       clearTimeout(keepAlive)
-    )
+      if (client) {
+        client.close()
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -38,9 +40,10 @@ export default function LiveDraft({ user, draft, teamData, getGroupData }) {
           let newDraft = JSON
             .parse(message.data.replace('change:', ''))
 
-          setLiveDraft(newDraft)
           if (newDraft.status === 'finished') {
             getGroupData(newDraft.gameGroup)
+          } else {
+            setLiveDraft(newDraft)
           }
         } else if (message.data.startsWith('you sent this: keep me alive')) {
           console.log('ping pong')
@@ -101,7 +104,7 @@ export default function LiveDraft({ user, draft, teamData, getGroupData }) {
               <h5>Kierros {liveDraft.round}</h5>
               <h5>Vuoro {liveDraft.pick}</h5>
               <ol>
-                {liveDraft.draftOrder.map((user, i) => <li key={i}>{user.username}</li>)}
+                {liveDraft.fullDraftOrder.map((user, i) => <li key={i}>{user.username}</li>)}
               </ol>
               {liveDraft.draftOrder[0].username === user.username ?
                 <div>

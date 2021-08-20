@@ -7,19 +7,10 @@ const jwt = require('jsonwebtoken')
 const logger = require('../utils/logger')
 
 
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
-  }
-  return null
-}
-
 gameGroupRouter.post('/create', async (request, response) => {
   const body = request.body
-  const token = getTokenFrom(request)
-  const decodedToken = jwt.verify(token, process.env.SECRET)
-  if (!token || !decodedToken.id) {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
 
@@ -62,9 +53,8 @@ gameGroupRouter.post('/create', async (request, response) => {
 })
 
 gameGroupRouter.delete('/:id', async (request, response) => {
-  const token = getTokenFrom(request)
-  const decodedToken = jwt.verify(token, process.env.SECRET)
-  if (!token || !decodedToken.id) {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
 
@@ -117,9 +107,8 @@ gameGroupRouter.get('/:id', async (request, response) => {
 })
 
 gameGroupRouter.put('/accept/:id', async (request, response) => {
-  const token = getTokenFrom(request)
-  const decodedToken = jwt.verify(token, process.env.SECRET)
-  if (!token || !decodedToken.id) {
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
 
@@ -173,54 +162,44 @@ gameGroupRouter.get('/draft/:id', async (request, response) => {
 })
 
 gameGroupRouter.put('/draft/:id', async (request, response) => {
-  try {
-    const id = request.params.id
-    const body = request.body
-    logger.info(id, body)
+  const id = request.params.id
+  const body = request.body
+  logger.info(id, body)
 
-    const draft = await Draft.findOne({ _id: id })
+  const draft = await Draft.findOne({ _id: id })
 
-    if (draft && body) {
-      draft.startingTime = body.startingTime
-      draft.timeForTakingPick = body.timeForTakingPick
+  if (draft && body) {
+    draft.startingTime = body.startingTime
+    draft.timeForTakingPick = body.timeForTakingPick
 
-      const savedDraft = await draft.save()
+    const savedDraft = await draft.save()
 
-      response.json(savedDraft)
-    } else {
-      response.json('draft not found')
-    }
-  } catch {
-    response.json('erroria pirusti')
+    response.json(savedDraft)
+  } else {
+    response.json('draft not found')
   }
-  
 })
 
 gameGroupRouter.put('/draft/:id/prePicks', async (request, response) => {
-  try {
-    const id = request.params.id
-    const body = request.body.body
-    // logger.info(id, body)
+  const id = request.params.id
+  const body = request.body.body
 
-    const draft = await Draft.findOne({ _id: id })
+  const draft = await Draft.findOne({ _id: id })
 
-    if (draft) {
-      draft.prePicks = await draft.prePicks.filter(p => {
-        logger.info(p.user, body.userId, p.user.toString() === body.userId)
-        return p.user.toString() !== body.userId
-      })
+  if (draft) {
+    draft.prePicks = await draft.prePicks.filter(p => {
+      logger.info(p.user, body.userId, p.user.toString() === body.userId)
+      return p.user.toString() !== body.userId
+    })
 
-      await draft.prePicks.push({ user: body.userId, picks: body.picks })
+    await draft.prePicks.push({ user: body.userId, picks: body.picks })
 
-      logger.info(`added prepicks for ${body.userId}`)
+    logger.info(`added prepicks for ${body.userId}`)
 
-      await draft.save()
-      response.send('ok')
-    } else {
-      response.send('draft not found')
-    }
-  } catch {
-    logger.info('error')
+    await draft.save()
+    response.send('ok')
+  } else {
+    response.send('draft not found')
   }
 })
 
