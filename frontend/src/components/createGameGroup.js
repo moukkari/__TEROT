@@ -43,9 +43,14 @@ export default function CreateGameGroup({ user, createMessage, setUser }) {
     <div>
       <h4>Luo kimppa</h4>
         Kimpan nimi:
-      <input value={groupName} onChange={({ target }) => setGroupName(target.value)} />
+      <input
+        value={groupName}
+        onChange={({ target }) => setGroupName(target.value)}
+      />
         &nbsp;
-      <Button onClick={() => createGroup()} variant='success'>Luo kimppa</Button>
+      <Button onClick={() => createGroup()} variant='success'>
+        Luo kimppa
+      </Button>
     </div>
   )
 }

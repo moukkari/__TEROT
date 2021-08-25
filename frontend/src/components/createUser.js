@@ -6,7 +6,9 @@ import { APIURL } from '../services/addresses'
 
 export default function CreateUser({ createMessage }) {
   const [toggle, setToggle] = useState(false)
-  const [newUser, setNewUser] = useState({ name: '', username: '', password: '' })
+  const [newUser, setNewUser] = useState({
+    name: '', username: '', password: ''
+  })
 
   const createUser = () => {
     if (window.confirm(`Haluatko luoda käyttäjän ${newUser.username}?`)) {
@@ -37,22 +39,42 @@ export default function CreateUser({ createMessage }) {
     <div>
       {toggle ?
         <div>
-          <Button style={{ float:'right' }} onClick={() => setToggle(!toggle)}>Peruuta</Button>
+          <Button style={{ float:'right' }} onClick={() => setToggle(!toggle)}>
+            Peruuta
+          </Button>
           <h5>Luo uusi käyttäjä</h5>
 
         Käyttäjänimi: <br/>
-          <input value={newUser.username} onChange={({ target }) => setNewUser({ ...newUser, username: target.value })} />
+          <input
+            value={newUser.username}
+            onChange={({ target }) => setNewUser(
+              { ...newUser, username: target.value }
+            )}
+          />
           <br/>
         Nimi: <br/>
-          <input value={newUser.name} onChange={({ target }) => setNewUser({ ...newUser, name: target.value })} />
+          <input
+            value={newUser.name}
+            onChange={({ target }) => setNewUser(
+              { ...newUser, name: target.value }
+            )}
+          />
           <br/>
         Salasana: <br/>
-          <input value={newUser.password} onChange={({ target }) => setNewUser({ ...newUser, password: target.value })} type="password" />
+          <input
+            value={newUser.password}
+            onChange={({ target }) => setNewUser(
+              { ...newUser, password: target.value }
+            )}
+            type="password"
+          />
           <br/>
           <Button onClick={createUser} variant='success'>Luo käyttäjä</Button>
         </div>
         :
-        <Button onClick={() => setToggle(!toggle)} size='lg'>Luo uusi käyttäjä</Button>
+        <Button onClick={() => setToggle(!toggle)} size='lg'>
+          Luo uusi käyttäjä
+        </Button>
       }
     </div>
   )

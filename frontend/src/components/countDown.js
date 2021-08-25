@@ -8,15 +8,18 @@ export default function Countdown({ liveDraft }) {
   }, [])
 
   const draftTime = new Date(liveDraft.startingTime).getTime()
-  const countTime = new Date(draftTime - dateNow)
-  let timer = ''
-  if (countTime.getMonth() > 0) {
-    timer += `${countTime.getMonth()} kuukautta, `
-  }
-  timer += `${countTime.getDay()} päivää, `
-  timer += `${countTime.getHours()} tuntia, `
-  timer += `${countTime.getMinutes()} minuuttia, `
-  timer += `${countTime.getSeconds()} sekuntia`
+  let countTime = (draftTime - dateNow) / 1000
+
+  const days = Math.floor(countTime / 86400)
+  countTime -= days * 86400
+
+  const hours = Math.floor(countTime / 3600) % 24
+  countTime -= hours * 3600
+
+  const minutes = Math.floor(countTime / 60) % 60
+  countTime -= minutes * 60
+
+  const seconds = Math.floor(countTime % 60)
 
   const timerVar = setTimeout(() => {
     if (countTime > 0) {
@@ -25,5 +28,12 @@ export default function Countdown({ liveDraft }) {
   }, 1000)
   timerVar
 
-  return <p>Aikaa draftin alkuun {timer}</p>
+  let timeString = ''
+
+  if (days > 0) timeString += `${days} päivää, `
+  if (hours > 0) timeString += `${hours} tuntia, `
+  if (minutes > 0) timeString += `${minutes} minuuttia ja `
+  timeString += `${seconds} sekuntia.`
+
+  return <p>Aikaa draftin alkuun {timeString}</p>
 }

@@ -4,7 +4,8 @@ import { Table } from 'react-bootstrap'
 export default function Standings({ teamData }) {
   const sortedStandings = teamData.sort((a, b) => {
     const aw = a.Wins, ao = a.OvertimeLosses, bw = b.Wins, bo = b.OvertimeLosses
-    return ((aw * 2) + ao) < ((bw * 2) + bo) ? 1 : ((bw * 2) + bo) < ((aw * 2) + ao) ? -1 : 0
+    return ((aw * 2) + ao) < ((bw * 2) + bo) ?
+      1 : ((bw * 2) + bo) < ((aw * 2) + ao) ? -1 : 0
   })
 
   const standingLogo = {
@@ -26,13 +27,18 @@ export default function Standings({ teamData }) {
           return (
             <tr key={team.Name} onClick={() => console.log(team)}>
               <td width='15%' style={{ textAlign: 'center' }}>
-                <img alt={team.Key} src={team.WikipediaLogoUrl} style={standingLogo} />
+                <img
+                  alt={team.Key}
+                  src={team.WikipediaLogoUrl}
+                  style={standingLogo}
+                />
               </td>
               <td>{team.City} {team.Name}</td>
               <td>{(team.Wins * 2) + team.OvertimeLosses}</td>
             </tr>
           )})
         }
+        {!sortedStandings.length > 0 ? 'Palvelimeen ei saada yhteyttä': ''}
       </tbody>
     </Table>
   )

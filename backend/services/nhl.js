@@ -31,11 +31,15 @@ const updateTeamData = async () => {
     let standings = await getStandings()
 
     teams.forEach(async (team) => {
-      const standing = standings.find(standing => standing.TeamID === team.TeamID)
+      const standing = standings.find(standing => (
+        standing.TeamID === team.TeamID
+      ))
+
       if (standing) {
         team = { ...team, ...standing }
 
-        let teamData = await Team.findOneAndUpdate({ TeamID: team.TeamID }, team)
+        let teamData = await Team.findOneAndUpdate(
+          { TeamID: team.TeamID }, team)
 
         if (teamData === null) {
           logger.info('inserting team data for', team.City, team.Name)
@@ -55,7 +59,8 @@ const updateTeamData = async () => {
 // Recommended call interval: 5 mins
 const getStandings = async () => {
   const currentSeason = await getCurrentSeason()
-  const url = `${APIURL}/Standings/${currentSeason.Season - 1}?key=${process.env.NHLAPIKEY}`
+  const url = 
+  `${APIURL}/Standings/${currentSeason.Season - 1}?key=${process.env.NHLAPIKEY}`
 
   logger.info(currentSeason, url)
   return await axios.get(url)
@@ -102,8 +107,11 @@ const updateGamesByDate = async () => {
   }
   logger.info(d.toLocaleString('fi-FI'))
 
+
   // eg. 2021-OCT-12
-  const dString = `${d.getFullYear()}-${d.toLocaleString('default', {month: 'short'}).toUpperCase()}-${('0' + d.getDate()).slice(-2)}`
+  const mnth = `${d.toLocaleString('default', {month: 'short'}).toUpperCase()}`
+  const twoDigitDate = `${('0' + d.getDate()).slice(-2)}`
+  const dString = `${d.getFullYear()}-${mnth}-${twoDigitDate}`
   const url = `${APIURL}/GamesByDate/${dString}?key=${process.env.NHLAPIKEY}`
 
   const data = await axios.get(url)
@@ -116,10 +124,12 @@ const updateGamesByDate = async () => {
 
   if (data.length > 0) {
     data.forEach(async (match) => {
-      let matchData = await Match.findOneAndUpdate({ GameID: match.GameID }, match)
+      let matchData = await Match.findOneAndUpdate(
+        { GameID: match.GameID }, match)
 
       if (matchData === null) {
-        logger.info('inserting match data:', match.AwayTeam, 'vs', match.HomeTeam)
+        logger.info('inserting match data:',
+          match.AwayTeam, 'vs', match.HomeTeam)
         const newMatchData = new Match(match)
         await newMatchData.save()
       }

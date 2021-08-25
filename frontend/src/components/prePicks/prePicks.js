@@ -45,7 +45,9 @@ export default function PrePicks({ user, draft, teamData, createMessage }) {
     <div>
       <h3>Listaa tiimit etukäteen</h3>
       <div style={{ textAlign: 'center', margin: '2em 0em' }}>
-        <Button onClick={save} size='lg' variant='success'>Tallenna lista</Button>
+        <Button onClick={save} size='lg' variant='success'>
+          Tallenna lista
+        </Button>
       </div>
 
       {draft ?
@@ -56,7 +58,9 @@ export default function PrePicks({ user, draft, teamData, createMessage }) {
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
-                {teamOrder.map((team, i) => <Team key={team._id} team={team} index={i} />)}
+                {teamOrder.map((team, i) => (
+                  <Team key={team._id} team={team} index={i} />
+                ))}
                 {provided.placeholder}
               </div>
             )}
@@ -67,7 +71,9 @@ export default function PrePicks({ user, draft, teamData, createMessage }) {
 
 
       <div style={{ textAlign: 'center', fontWeight: 700, margin: '2em 0em' }}>
-        <Button onClick={save} size='lg' variant='success'>Tallenna lista</Button>
+        <Button onClick={save} size='lg' variant='success'>
+          Tallenna lista
+        </Button>
       </div>
 
     </div>

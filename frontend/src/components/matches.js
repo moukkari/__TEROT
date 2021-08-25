@@ -33,12 +33,14 @@ export default function Matches({ teamData, draft }) {
             let away = draft.teamsChosen.find(el => el.team.Key === m.AwayTeam)
             let hData = teamData.find(t => t.Key === m.HomeTeam)
             let aData = teamData.find(t => t.Key === m.AwayTeam)
-            // Seattle will play on opening night, but it's data is still missing
+            // Seattle will play on opening night, but the data is still missing
             if (!away && !aData) {
-              away = { user: { name: 'not found' }, team: { City: 'Seattle', Name: 'Kraken', Key: 'SEA' } }
+              away = { user: { name: 'not found' },
+                team: { City: 'Seattle', Name: 'Kraken', Key: 'SEA' } }
               aData = {
                 Key: 'SEA',
                 WikipediaLogoUrl:
+                // eslint-disable-next-line max-len
                 'https://upload.wikimedia.org/wikipedia/fi/thumb/8/8f/Seattle_Kraken_logo.svg/200px-Seattle_Kraken_logo.svg.png'
               }
             }
@@ -46,13 +48,21 @@ export default function Matches({ teamData, draft }) {
               <tr key={m.GameID}>
                 <td>{home.team.City} {home.team.Name}</td>
                 <td>
-                  <img alt={hData.Key} src={hData.WikipediaLogoUrl} height='20px' />
+                  <img
+                    alt={hData.Key}
+                    src={hData.WikipediaLogoUrl}
+                    height='20px'
+                  />
                 </td>
                 <td>{home.user.name}</td>
                 <td>vs</td>
                 <td>{away.user.name}</td>
                 <td>
-                  <img alt={aData.Key} src={aData.WikipediaLogoUrl} height='20px' />
+                  <img
+                    alt={aData.Key}
+                    src={aData.WikipediaLogoUrl}
+                    height='20px'
+                  />
                 </td>
                 <td>{away.team.City} {away.team.Name}</td>
               </tr>

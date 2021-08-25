@@ -20,6 +20,10 @@ module.exports = {
     'react', 'react-hooks'
   ],
   'rules': {
+    'max-len': [
+      'error',
+      { 'code': 80 }
+    ],
     'indent': [
       'error',
       2

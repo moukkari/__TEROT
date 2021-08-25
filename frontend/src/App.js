@@ -23,7 +23,7 @@ const App = () => {
 
   const createMessage = (msg, error = false) => {
     let style = {
-      position: 'absolute',
+      position: 'fixed',
       top: 0,
       borderBottom: '1px solid black',
       padding: '1em',
@@ -55,7 +55,8 @@ const App = () => {
             <h1>Kiakkoterot</h1>
           </Col>
           <Col xs={8} md={4}>
-            <Login user={user} setUser={setUser} createMessage={createMessage} />
+            <Login user={user} setUser={setUser}
+              createMessage={createMessage} />
             {user ?
               <AcceptInvitation
                 user={user}
@@ -86,7 +87,10 @@ const App = () => {
         </Row>
         <Row>
           <Col>
-            &copy; <a href='mailto:tyrkkoilmari@gmail.com'>Ilmari Tyrkkö</a> 2021
+            &copy;&nbsp;
+            <a href='mailto:tyrkkoilmari@gmail.com'>
+              Ilmari Tyrkkö
+            </a> 2021
           </Col>
         </Row>
 

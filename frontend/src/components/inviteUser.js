@@ -11,7 +11,8 @@ export default function InviteUser({ user, gameGroupData }) {
     axios.get(`${APIURL}/users`)
       .then(response => {
         // removes the logged in user from the users list
-        let filteredUsers = response.data.filter(u => u.username !== user.username)
+        let filteredUsers = response.data
+          .filter(u => u.username !== user.username)
         setUsers(filteredUsers)
       })
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -34,10 +35,14 @@ export default function InviteUser({ user, gameGroupData }) {
     let option = ''
     if (otherUser.invitations && otherUser.invitations.includes(user.adminOf)) {
       option = 'Kutsuttu'
-    } else if (gameGroupData.players && gameGroupData.players.some(p => p._id === otherUser._id)) {
+    } else if (gameGroupData.players &&
+        gameGroupData.players.some(p => p._id === otherUser._id)) {
       option = 'Liittynyt'
     } else {
-      option = <Button onClick={() => invite(otherUser)} size='sm' variant='success'>Kutsu</Button>
+      option =
+        <Button onClick={() => invite(otherUser)} size='sm' variant='success'>
+          Kutsu
+        </Button>
     }
     return (
       <tr key={i}>

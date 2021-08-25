@@ -7,7 +7,11 @@ const draftSchema = mongoose.Schema({
     required: true
   },
   status: { type: String, default: 'scheduled', required: true },
-  startingTime: { type: Date, default: new Date('October 5, 2021 17:00:00'), required: true },
+  startingTime: { 
+    type: Date, 
+    default: new Date('October 5, 2021 17:00:00'), 
+    required: true 
+  },
   teamsLeft: [
     {
       type: mongoose.Schema.Types.ObjectId,

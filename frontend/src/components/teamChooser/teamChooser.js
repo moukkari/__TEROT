@@ -55,7 +55,10 @@ export default function TeamChooser({ liveDraft, chooseTeam, teamData }) {
   return (
     <div>
       <h5>Valitse joukkue</h5>
-      <p><Timer time={liveDraft.timeForTakingPick || 60} /> sekuntia aikaa jäljellä</p>
+      <p>
+        <Timer time={liveDraft.timeForTakingPick || 60} />
+        &nbsp;sekuntia aikaa jäljellä
+      </p>
       <div className='chosenTeam' style={teamStyle}>
         {chosenTeam ?
           <Row>
@@ -90,7 +93,13 @@ export default function TeamChooser({ liveDraft, chooseTeam, teamData }) {
       <div className='teamContainer'>
         {liveDraft.teamsLeft.map(team => {
           const data = teamData.find(t => t._id === team._id)
-          return <TeamComponent key={team.Key} team={data} chooseTeam={setChosenTeam} />
+          return (
+            <TeamComponent
+              key={team.Key}
+              team={data}
+              chooseTeam={setChosenTeam}
+            />
+          )
         })}
       </div>
     </div>

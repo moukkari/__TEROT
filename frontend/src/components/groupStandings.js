@@ -39,7 +39,12 @@ export default function GroupStandings({ gameGroup, teamData }) {
               <td>{standing.user}</td>
               <td>{standing.points}</td>
               <td>{standing.teams.map(t => (
-                <img key={t.Key} alt={t.Key} src={t.WikipediaLogoUrl} style={logo} />)
+                <img
+                  key={t.Key}
+                  alt={t.Key}
+                  src={t.WikipediaLogoUrl}
+                  style={logo}
+                />)
               )}</td>
             </tr>
           )})}

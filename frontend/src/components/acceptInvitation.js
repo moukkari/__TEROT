@@ -14,11 +14,15 @@ export default function AcceptInvitation({ user, setUser, createMessage }) {
     axios.put(`${APIURL}/gamegroup/accept/${invitation._id}`, null, config)
       .then(response => {
         if (response.status === 200) {
-          const newInvitations = invitations.filter(i => i._id.toString() !== invitation._id.toString())
+          const newInvitations = invitations.filter(i => (
+            i._id.toString() !== invitation._id.toString()
+          ))
           setInvitations(newInvitations)
 
           const d = response.data
-          const newUser = { ...user, invitations: d.invitations, gameGroups: d.gameGroups }
+          const newUser = {
+            ...user, invitations: d.invitations, gameGroups: d.gameGroups
+          }
           console.log(newUser)
           setUser(newUser)
           localStorage.setItem('kiakkoTeroUser', JSON.stringify(newUser))
@@ -33,7 +37,9 @@ export default function AcceptInvitation({ user, setUser, createMessage }) {
       setInvitationList(invitations.map(i => (
         <li key={i}>
           {i.name} - {i.admin.name}
-          <Button onClick={() => accept(i)} size='sm' variant='success'>Hyväksy</Button>
+          <Button onClick={() => accept(i)} size='sm' variant='success'>
+            Hyväksy
+          </Button>
         </li>)
       ))
     }

@@ -31,14 +31,18 @@ loginRouter.post('/', async (request, response) => {
     { expiresIn: 60*60 }
   )
 
-  const responseUser = { token, username: user.username, name: user.name, _id: user._id }
+  const responseUser = { 
+    token, username: user.username, name: user.name, _id: user._id 
+  }
   if (user.adminOf) { responseUser.adminOf = user.adminOf }
   if (user.invitations) { 
-    const invitations = await GameGroup.find().where('_id').in(user.invitations).populate('admin').exec()
+    const invitations = await GameGroup.find()
+      .where('_id').in(user.invitations).populate('admin').exec()
     responseUser.invitations = invitations
   }
   if (user.gameGroups) {
-    const groups = await GameGroup.find().where('_id').in(user.gameGroups).populate().exec()
+    const groups = await GameGroup.find()
+      .where('_id').in(user.gameGroups).populate().exec()
     responseUser.gameGroups = groups
   }
 

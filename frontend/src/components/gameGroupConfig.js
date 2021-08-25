@@ -49,20 +49,32 @@ export default function GameGroupConfig({ user, setUser, createMessage }) {
       <h3>Draft-asetukset</h3>
       {gameGroupData && gameGroupData.draft ?
         <div>
-          <Button
-            variant='danger'
-            onClick={() => removeGameGroup()}
-            style={{ float: 'right' }}
-          >
-            Poista kimppa
-          </Button>
-
-          <DraftSettings draft={gameGroupData.draft} createMessage={createMessage} />
-          <InviteUser user={user} gameGroupData={gameGroupData} />
-
+          <div>
+            <Button
+              variant='danger'
+              onClick={() => removeGameGroup()}
+              style={{ float: 'right' }}
+            >
+              Poista kimppa
+            </Button>
+            {gameGroupData.draft.status === 'scheduled' ?
+              <div>
+                <DraftSettings
+                  draft={gameGroupData.draft}
+                  createMessage={createMessage}
+                />
+                <InviteUser user={user} gameGroupData={gameGroupData} />
+              </div>
+              : 'Et voi enää vaihtaa draftin asetuksia.'
+            }
+          </div>
         </div>
         :
-        <CreateGameGroup user={user} createMessage={createMessage} setUser={setUser} />
+        <CreateGameGroup
+          user={user}
+          createMessage={createMessage}
+          setUser={setUser}
+        />
       }
     </div>
   )

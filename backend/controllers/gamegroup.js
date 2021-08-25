@@ -125,7 +125,9 @@ gameGroupRouter.put('/accept/:id', async (request, response) => {
 
     user.gameGroups.push(gameGroup._id)
     user.invitations.pull(gameGroup._id)
-    const savedUser = await user.save().then(user => user.populate('gameGroups').execPopulate())
+    const savedUser = await user.save().then(user => (
+      user.populate('gameGroups').execPopulate()
+    ))
     logger.info(savedUser)
     response.status(200).json(savedUser)
   } else {

@@ -17,8 +17,6 @@ const gameGroupRouter = require('./controllers/gamegroup')
 const draftRouter = require('./controllers/draft')
 const logger = require('./utils/logger')
 
-logger.error('testing')
-
 const mongoOptions = { 
   useNewUrlParser: true, 
   useUnifiedTopology: true, 
@@ -34,10 +32,9 @@ mongoose.connect(config.MONGODB_URI, mongoOptions)
     logger.error('error connecting to MongoDB:', error.message)
   })
 
-//nhlService.initialize()
+nhlService.initialize()
 draftService.initialize()
 
-// app.use(express.static('build'))
 app.use(cors())
 app.use(express.json())
 app.use(middleware.tokenExtractor)

@@ -7,7 +7,6 @@ import GameGroupConfig from './gameGroupConfig'
 import GameGroupStatus from './gameGroupStatus'
 
 const Navigation = ({ location }) => {
-  console.log(location)
   return (
     <Nav fill justify variant='tabs' activeKey={location.pathname}>
       <Nav.Item>
@@ -22,7 +21,9 @@ const Navigation = ({ location }) => {
 
 const NavigationWithRouter = withRouter(Navigation)
 
-export default function GameGroupHandler({ user, teamData, setUser, createMessage }) {
+export default function GameGroupHandler(
+  { user, teamData, setUser, createMessage }
+) {
   return (
     <Router>
       <NavigationWithRouter />
@@ -35,7 +36,11 @@ export default function GameGroupHandler({ user, teamData, setUser, createMessag
           />
         </Route>
         <Route exact path='/admin'>
-          <GameGroupConfig user={user} setUser={setUser} createMessage={createMessage} />
+          <GameGroupConfig
+            user={user}
+            setUser={setUser}
+            createMessage={createMessage}
+          />
         </Route>
       </Switch>
 

@@ -9,7 +9,8 @@ import { APIURL } from '../services/addresses'
 export default function DraftSettings({ draft, createMessage }) {
   const [oldDate, setOldDate] = useState(new Date(draft.startingTime))
   const [date, setDate] = useState(new Date(draft.startingTime))
-  const [timeForTakingPick, setTimeForTakingPick] = useState(draft.timeForTakingPick || 60)
+  const [timeForTakingPick, setTimeForTakingPick] =
+    useState(draft.timeForTakingPick || 60)
 
   const saveData = () => {
     if (timeForTakingPick < 15) {

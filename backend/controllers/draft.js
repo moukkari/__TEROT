@@ -7,14 +7,16 @@ const logger = require('../utils/logger')
  * @param {*} req 
  * 
  * At the moment you can access this with a single user on a single device
- * Multiple devices not supported, because the client is dropped from the clients array
+ * Multiple devices not supported, because the client is dropped from the 
+ * clients array.
  */
 
 const draftRouter = async (ws, req) => {
   const clientId = req.params.clientId
   const draftId = req.params.draftId
   const webSocketKey = req.headers['sec-websocket-key']
-  logger.info('web socket connection opened for', clientId, draftId, webSocketKey)
+  logger.info('web socket connection opened for',
+    clientId, draftId, webSocketKey)
 
   draftService.checkForClient(clientId, draftId, webSocketKey, ws)
 

@@ -13,9 +13,10 @@ export default function Login({ user, setUser, createMessage }) {
 
   useEffect(() => {
     const storageUser = JSON.parse(localStorage.getItem('kiakkoTeroUser'))
-    // console.log('user found', JSON.stringify(user), JSON.parse(user), typeof user)
     if (storageUser) {
-      const config = { headers: { Authorization: `bearer ${storageUser.token}` } }
+      const config = {
+        headers: { Authorization: `bearer ${storageUser.token}` }
+      }
       axios.get(`${APIURL}/login`, config)
         .then(() => {
           console.log('valid token')
@@ -33,14 +34,12 @@ export default function Login({ user, setUser, createMessage }) {
 
   const handleLogin = async (event) => {
     event.preventDefault()
-    console.log('logging in with', username, password)
 
     try {
       const u = await loginService.login({ username, password })
       localStorage.setItem('kiakkoTeroUser', JSON.stringify(u))
       setUser(u)
     } catch (exception) {
-      console.log('errori', exception)
       createMessage('Väärät tunnukset', true)
       setUser(null)
     }

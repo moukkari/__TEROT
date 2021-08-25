@@ -13,7 +13,8 @@ export default function Team({ team, index }) {
   const teamStyle = {
     position: 'relative',
     display: 'inline-block',
-    backgroundImage: `linear-gradient(to right, white, #${team.PrimaryColor} 20%)`,
+    backgroundImage:
+      `linear-gradient(to right, white, #${team.PrimaryColor} 20%)`,
     border: '1px solid grey',
     width: '75%',
     height: '66px',
@@ -65,7 +66,11 @@ export default function Team({ team, index }) {
 
             <div style={number}>{index+1}.</div>
             <div style={teamStyle}>
-              <img alt={team.Key} src={team.WikipediaLogoUrl} style={imgStyle} />
+              <img
+                alt={team.Key}
+                src={team.WikipediaLogoUrl}
+                style={imgStyle}
+              />
               <div style={textContainer}>{team.City} {team.Name}</div>
             </div>
           </div>

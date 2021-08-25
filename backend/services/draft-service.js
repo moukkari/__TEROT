@@ -73,7 +73,8 @@ const scheduleDraft = async (draftId, startingTime) => {
   logger.info(`scheduling Draft ${draftId} to start at ${startingTime}`)
   let startingDate = new Date(startingTime) // CHANGE TO startingTime
   //startingDate.setSeconds(startingDate.getSeconds() + 5) // REMOVE
-  logger.info(new Date().toLocaleString(), new Date(startingTime).toLocaleString())
+  logger.info(new Date().toLocaleString(),
+    new Date(startingTime).toLocaleString())
 
   schedule[draftId] = scheduler.scheduleJob(startingDate, async () => {
     logger.info('job started')
@@ -85,7 +86,8 @@ const scheduleDraft = async (draftId, startingTime) => {
       .populate('players', 'name')
     
     draft.draftOrder = await shuffle(gameGroup.players)
-    draft.totalRounds = Math.floor(draft.teamsLeft.length / gameGroup.players.length)
+    draft.totalRounds = 
+      Math.floor(draft.teamsLeft.length / gameGroup.players.length)
 
     draft.picksPerRound = Math.floor(draft.teamsLeft.length / draft.totalRounds)
 
@@ -108,13 +110,13 @@ const scheduleDraft = async (draftId, startingTime) => {
 }
 
 const shuffle = (arr) => {
-  let currentIndex = arr.length, randomIndex
+  let current = arr.length, randomIndex
 
-  while (0 !== currentIndex) {
-    randomIndex = Math.floor(Math.random() * currentIndex)
-    currentIndex--
+  while (0 !== current) {
+    randomIndex = Math.floor(Math.random() * current)
+    current--
 
-    [arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]]
+    [arr[current], arr[randomIndex]] = [arr[randomIndex], arr[current]]
 
     return arr
   }
@@ -219,11 +221,13 @@ const pickATeam = async (draftId, teamId, playerInTurn) => {
   let user = await User.findOne({ _id: playerInTurn })
 
   // try to find user's prepicks
-  let prePicks = await draft.prePicks.find(p => p.user.toString() === playerInTurn.toString())
+  let prePicks = await draft.prePicks
+    .find(p => p.user.toString() === playerInTurn.toString())
 
   if (prePicks) {
     for (const pick of prePicks.picks) {
-      const team = await draft.teamsLeft.find(t => t.toString() === pick.toString())
+      const team = await draft.teamsLeft
+        .find(t => t.toString() === pick.toString())
       
       if (team) {
         teamId = team
